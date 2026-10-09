@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biblioteca de Disjuntores</title>
+<style>
+:root{--ink:#14202b;--bg:#dfe6ea;--wood:#4a2f1e;--wood2:#6b4630;--brass:#c89b3c;--red:#b3261e;--panel:#f5f7f8;--line:#b9c4cb;--oil:#2f7db8}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+header h1{font:700 1.25rem Georgia,serif;margin:0;flex:1}
+button{font:inherit;cursor:pointer;border:1px solid var(--ink);background:var(--panel);color:var(--ink);padding:8px 14px;border-radius:4px}
+button:hover{background:var(--brass)}button:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+button.on{background:var(--ink);color:#fff}
+header button{border-color:#fff;background:transparent;color:#fff}header button:hover{color:var(--ink)}
+main{max-width:1000px;margin:0 auto;padding:20px}
+h2{font:700 1.5rem Georgia,serif;margin:.2em 0 .6em}
+.shelf{background:var(--wood);border-radius:6px;padding:14px 14px 0;margin-bottom:22px}
+.books{display:flex;gap:10px;align-items:flex-end;min-height:150px}
+.board{height:14px;background:var(--wood2);margin:0 -14px;border-top:3px solid #2e1c10}
+.book{width:74px;height:150px;border-radius:3px 3px 0 0;color:#fff;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:700 1.05rem Georgia,serif;border:2px solid rgba(255,255,255,.35);border-bottom:0}
+.book.off{opacity:.4;cursor:default;height:130px}
+.cap{color:#f3e3c0;font:600 .95rem system-ui;margin:0 0 10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.book{width:62px}}
+.fig{position:relative;display:block;margin:0 auto;width:100%;max-width:var(--mw,560px);line-height:0}
+.fig img{width:100%;height:auto;display:block;border-radius:4px;background:#fff;transition:transform .5s,opacity .5s}
+.fig.go img{transform:scale(1.15);opacity:0}
+.pt{position:absolute;transform:translate(-50%,-50%);min-width:24px;height:24px;border-radius:12px;padding:0 4px;background:rgba(200,155,60,.88);border:2px solid var(--ink);font:700 10px/1 system-ui;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.pt:hover,.pt.sel{background:var(--red);color:#fff;z-index:2;transform:translate(-50%,-50%) scale(1.25)}
+.pt.oil{background:rgba(47,125,184,.9);color:#fff}
+.pt.hl{outline:3px solid var(--red);outline-offset:2px}
+.pt.hint{width:34px;height:34px;border-radius:50%;animation:p 1.4s infinite;font-size:16px}
+@keyframes p{50%{box-shadow:0 0 0 12px rgba(200,155,60,0)}0%{box-shadow:0 0 0 0 rgba(200,155,60,.9)}}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:3px;padding:1px 8px;font-size:.85rem}
+dl{margin:.4em 0}dt{font-weight:700;margin-top:.7em}dd{margin:0}
+.warn{border-left:5px solid var(--red);background:#fbe9e7;padding:8px 12px;margin-top:12px;font-size:.92rem}
+.lub{border-left:5px solid var(--brass);background:#fbf3de;padding:8px 12px;margin-top:8px}
+.hide{display:none}.note{font-size:.85rem;color:#44525d;margin:.6em 0 0}
+.chips button{font-size:.85rem;padding:4px 10px}
+@media(prefers-reduced-motion:reduce){.fig img{transition:none}.pt.hint{animation:none}}
+</style>
+</head>
+<body>
+<header><h1>Biblioteca de Disjuntores</h1><button id="back" class="hide">← Voltar</button></header>
+<main id="app"></main>
+
+<script>
+/* ============ DADOS ============ */
+const CLASSES=[
+ {kv:"138 kV",cor:"#2c4a6b",itens:[]},
+ {kv:"69 kV",cor:"#5a3d6b",itens:[]},
+ {kv:"34,5 kV",cor:"#1f5c4d",itens:["3AF01"]},
+ {kv:"13,8 kV",cor:"#7a4a1e",itens:[]}
+];
+const GR="graxa Isoflex Topas L 32 (△)", OL="óleo Shell Tellus 32 (□)";
+const DISJ={"3AF01":{
+ marca:"Siemens",modelo:"3AF01 – Disjuntor a vácuo externo",classe:"34,5 kV (36/40,5 kV)",
+ resumo:"Tripolar externo, mecanismo de mola com armazenamento de energia. 1600/2000/2500 A, 25/26,3/31,5 kA, IP55.",
+ base:"",
+ docs:{projeto:"docs/desenho-3AF01.pdf",manual:"docs/manual-3AF01.pdf",catalogo:"docs/catalogo-3AF.pdf"},
+ placa:["Designação do tipo","Código do modelo","Número de série","Ano de fabricação","Tensão nominal / Frequência","Corrente nominal normal","Corrente nom. de int. de curto-circuito","Duração do curto-circuito nominal","Tensão nom. suportável de impulso atmosférico","Peso","Nº e data da ordem de compra","Operação nominal"],
+ placaNota:"Fica na carcaça do mecanismo (Manual, seção 2.1.1, Fig. 2).",
+ maçaneta:[36,57.8],
+ figs:{
+  mec:{t:"Mecanismo (Fig. 11)",img:"mecanismo.jpg",mw:"640px"},
+  polo:{t:"Polo em corte (Fig. 7)",img:"polo.jpg",mw:"430px"},
+  lub:{t:"Lubrificação (Fig. 13)",img:"lubrificacao.jpg",mw:"560px"}
+ },
+ comp:[
+ {id:"vac",n:"Interruptor a vácuo",f:"Câmara onde os contatos abrem e fecham. O arco é extinto no vácuo na primeira passagem da corrente por zero.",proj:"Manual Fig. 7 (item 17) e Fig. 9, pág. 6. Seção 3.2.",tec:"Tipo VS36025 (código 3AY1716-1A). Erosão máxima do contato: 3 mm. Vida: 10.000 operações mecânicas.",hs:[["polo",89.1,15.6,"17"]]},
+ {id:"iso",n:"Isolador de porcelana",f:"Isola a parte energizada da estrutura. Distância de fuga de 1320 mm, adequado para poluição muito alta.",proj:"Manual Fig. 7 (item 18), pág. 6. Seção 2.3.1.",tec:"Limpar só com pano úmido e detergente neutro, com o disjuntor aberto e as molas descarregadas.",hs:[["polo",89.1,32,"18"]]},
+ {id:"hst",n:"Haste de comutação",f:"Transmite o movimento do mecanismo ao contato móvel do interruptor a vácuo.",proj:"Manual Fig. 7 (item 27), pág. 6. Seção 3.4.",tec:"Teste de vácuo: ao retirar o pino, a haste deve ser puxada para cima pelo vácuo (seção 8.6).",hs:[["polo",13.8,34.6,"27"]]},
+ {id:"mpc",n:"Mola de pressão de contato",f:"Mantém a pressão de contato com o disjuntor fechado e compensa automaticamente a pequena erosão dos contatos.",proj:"Manual Fig. 7 (item 19), pág. 6. Seção 3.4.",tec:"É carregada durante o fechamento. A pressão atmosférica também ajuda a manter os contatos fechados.",hs:[["polo",89.1,44.1,"19"]]},
+ {id:"mot",n:"Motor de carga",f:"Carrega a mola de fechamento. Recarrega sozinho em até 15 s após cada fechamento.",proj:"Manual Fig. 11 (item 2), pág. 13. Seção 4.2.",tec:"Cerca de 770 W (CC) ou 900 VA (CA). Tensão de -15% a +10% do nominal. Peça 3AY15 11 (110/220 V CC).",hs:[["mec",31.9,94,"2"]]},
+ {id:"mf",n:"Mola de fechamento",f:"Armazena a energia que fecha o disjuntor. Ao fechar, também carrega a mola de abertura.",proj:"Manual Fig. 11 (item 12), pág. 13. Seção 3.4.",tec:"Carga manual com a manivela (abertura, item 15). O indicador de mola carregada é o item 8.",hs:[["mec",4.6,35.3,"12"]]},
+ {id:"ma",n:"Mola de abertura",f:"Fornece a energia para abrir os contatos e os mantém abertos.",proj:"Manual Fig. 11 (item 13), pág. 13.",tec:"A guia (g) e o pino (p) da mola têm pontos de lubrificação.",lub:"Ponto <b>g</b> (guia da mola de abertura): "+GR+".<br>Ponto <b>p</b> (pino da mola de abertura): "+OL+".",ll:["g","p"],hs:[["mec",56.2,94,"13"]]},
+ {id:"bt",n:"Botões ON e OFF",f:"Botão mecânico ON destrava a mola de fechamento e fecha o disjuntor. O botão OFF abre.",proj:"Manual Fig. 11 (itens 3 e 6), pág. 13. Seções 7.4 e 7.5.",tec:"Servem para operação local. Em campo, siga sempre os procedimentos de manobra da sua instalação.",hs:[["mec",60.5,5.8,"3"],["mec",66.5,5.8,"6"]]},
+ {id:"y9",n:"Solenoide de fechamento (Y9)",f:"Destrava a mola de fechamento carregada e fecha o disjuntor por comando elétrico.",proj:"Manual Fig. 11 (item 4), pág. 13. Seção 4.3.1.",tec:"Tipo 3AY1510. Cerca de 200 W/VA. Pulso mínimo de 40 ms. Tensão de -15% a +10%. Não é para operação contínua.",hs:[["mec",93,41.9,"4"]]},
+ {id:"y1",n:"1º disparador em derivação (Y1)",f:"Abre o disjuntor por comando elétrico (proteção ou manobra).",proj:"Manual Fig. 11 (item 5), pág. 13. Seção 4.3.2.",tec:"Tipo 3AY1510. Cerca de 200 W/VA. Pulso mínimo de 40 ms. Tensão de -30% a +10% (CC) ou -15% a +10% (CA). Tempo de abertura ≤ 65 ms.",hs:[["mec",93,44.9,"5"]]},
+ {id:"aux",n:"Interruptor auxiliar (S1)",f:"Acionado pelo eixo do disjuntor. Comuta os circuitos auxiliares e dá a sinalização de posição.",proj:"Manual Fig. 11 (item 14), pág. 13. Seção 4.4.",tec:"5NA+5NF (opcional 11+11). 250 V, 10 A. Tipo 3SV92 21 / 3SV92 22.",lub:"Ponto <b>e</b> (alavanca de operação da chave auxiliar) e ponto <b>h</b> (haste de operação): "+GR+".<br>Ponto <b>f</b> (chave auxiliar S1): "+OL+".",ll:["e","f","h"],hs:[["mec",94.1,31.5,"14"]]},
+ {id:"cnt",n:"Contador e indicadores",f:"Mostram LIG/DESL, mola carregada ou descarregada e o número de operações. Visíveis pelo visor da porta.",proj:"Manual Fig. 11 (itens 8, 9 e 16), pág. 13.",tec:"Indicador LIG = símbolo \"I\". DESL = símbolo \"O\".",hs:[["mec",5.4,53.2,"8"],["mec",5.4,63.3,"9"],["mec",4.6,73.4,"16"]]},
+ {id:"eix",n:"Eixo de acionamento / manobra",f:"Leva a força do mecanismo às hastes dos três polos pelo eixo comum.",proj:"Manual Fig. 11 (item 17) e Fig. 7 (itens 20 e 23), págs. 6 e 13.",tec:"O comprimento do tirante é ajustado em fábrica. Não altere.",lub:"Ponto <b>j</b> (rolamento do eixo de manobra): "+OL+".<br>Ponto <b>l</b> (alavanca no eixo de manobra) e ponto <b>k</b> (alavanca do bloco de desligamento): "+GR+".",ll:["j","k","l"],hs:[["mec",94.1,69.9,"17"],["polo",20.3,78.3,"20,23"]]},
+ {id:"aqc",n:"Aquecedor (E11)",f:"Evita condensação de umidade, principalmente nos isolantes.",proj:"Manual seção 7.6, pág. 13. Peça 4396201101. Não aparece numerado nas figuras.",tec:"100 W, 240 V CA. Deve ficar sempre ligado, com o disjuntor em operação ou não.",hs:[]}
+ ],
+ lubr:[
+  ["a","Alavanca de disparo","g",22.5,4.7],["b","Rolamento da alavanca","o",43.4,4.7],["c","Disco excêntrico","g",50.9,4.7],["d","Alavanca do bloco de ligação","g",58.1,4.7],
+  ["e","Alavanca de operação da chave auxiliar","g",94.7,32.8],["f","Chave auxiliar (S1)","o",94.7,39.4],["g","Guia da mola de abertura","g",94.7,56.3],["h","Haste de operação da chave auxiliar","g",94.7,70.6],
+  ["j","Rolamento do eixo de manobra (direito)","o",94.7,75.6],["j","Rolamento do eixo de manobra (esquerdo)","o",3.1,86.3],
+  ["p","Pino da mola de abertura","o",45.9,93.8],["m","Placa de isolamento","g",54.7,93.8],["l","Alavanca no eixo de manobra","g",63.4,93.8],["k","Alavanca do bloco de desligamento","g",68.8,93.8]
+ ]
+}};
+
+/* ============ NAVEGAÇÃO ============ */
+const app=document.getElementById("app"),back=document.getElementById("back");
+let stack=[];
+function go(fn){stack.push(fn);fn();back.classList.toggle("hide",stack.length<2)}
+back.onclick=()=>{stack.pop();stack[stack.length-1]();back.classList.toggle("hide",stack.length<2)};
+const $=s=>document.querySelector(s);
+
+function shelf(){
+ app.innerHTML='<h2>Escolha a classe de tensão</h2><p>Cada prateleira é uma classe. Livros apagados ainda não têm modelos cadastrados.</p>'+
+ CLASSES.map(c=>`<div class="shelf"><p class="cap">${c.kv}</p><div class="books">${
+  c.itens.length?c.itens.map(i=>`<button class="book" style="background:${c.cor}" data-m="${i}">${DISJ[i].marca} ${i}</button>`).join(""):`<div class="book off" style="background:${c.cor}" aria-hidden="true">vazio</div>`
+ }</div><div class="board"></div></div>`).join("");
+ app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>go(()=>ficha(b.dataset.m)));
+}
+
+function ficha(id){
+ const d=DISJ[id],[mx,my]=d.maçaneta;
+ app.innerHTML=`<h2>${d.marca} ${d.modelo}</h2><div class="grid"><div class="card"><div class="fig" id="fig" style="--mw:300px"><img src="${d.base}externa.jpg" alt="Foto do disjuntor ${id}">
+ <button class="pt hint" id="handle" style="left:${mx}%;top:${my}%" aria-label="Abrir a porta do mecanismo">⌂</button></div><p class="note" style="text-align:center">Foto: catálogo Siemens. Clique na maçaneta (ponto dourado).</p></div>
+ <div><div class="card"><p><span class="tag">${d.classe}</span></p><p>${d.resumo}</p>
+ <div class="row"><a href="${d.docs.projeto}" target="_blank"><button>Projeto</button></a><a href="${d.docs.manual}" target="_blank"><button>Manual</button></a><a href="${d.docs.catalogo}" target="_blank"><button>Catálogo</button></a><button id="pl">Placa</button></div>
+ <div id="placa" class="hide"></div></div></div></div>`;
+ $("#pl").onclick=()=>{const p=$("#placa");p.classList.toggle("hide");p.innerHTML=`<dl>${d.placa.map(x=>`<dt>${x}</dt>`).join("")}</dl><p class="note">${d.placaNota}</p>`};
+ $("#handle").onclick=()=>{$("#fig").classList.add("go");setTimeout(()=>go(()=>interno(id)),520)};
+}
+
+let cur={fig:"mec",sel:null};
+function interno(id,fig,hl){
+ const d=DISJ[id];cur.fig=fig||cur.fig||"mec";
+ app.innerHTML=`<h2>Por dentro do ${id}</h2><div class="row" style="margin:0 0 14px" id="tabs">${Object.entries(d.figs).map(([k,v])=>`<button data-f="${k}" class="${k===cur.fig?'on':''}">${v.t}</button>`).join("")}</div>
+ <div class="grid"><div class="card"><div class="fig" style="--mw:${d.figs[cur.fig].mw}"><img src="${d.base}${d.figs[cur.fig].img}" alt="${d.figs[cur.fig].t}">${pontos(d,cur.fig,hl)}</div>
+ <p class="note">Imagens do manual de instruções Siemens 3AF 01. Os números e letras são os do próprio manual.</p></div>
+ <div class="card" id="info" aria-live="polite">${cur.fig==="lub"?`<p>Clique em uma letra para ver o ponto de lubrificação.</p><p><span class="tag" style="background:var(--brass);color:var(--ink)">△ ${GR.replace(" (△)","")}</span><br><span class="tag" style="background:var(--oil)">□ ${OL.replace(" (□)","")}</span></p><p class="note">Lubrificar a cada 4.000 operações (mais cedo em local com muita poeira). Manual, seção 8.4.</p>`:"<p>Clique em um ponto numerado (ou em um item da lista abaixo) para ver o que é, para que serve e onde achar no projeto.</p>"}</div></div>
+ ${cur.fig==="lub"?"":`<div class="card chips"><b>Todos os componentes</b><div class="row">${d.comp.map(c=>`<button data-c="${c.id}">${c.n}</button>`).join("")}</div></div>`}`;
+ $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>interno(id,b.dataset.f));
+ app.querySelectorAll("[data-c]").forEach(el=>el.onclick=()=>detalhe(d,el.dataset.c,id));
+ app.querySelectorAll("[data-l]").forEach(el=>el.onclick=()=>lubPonto(d,+el.dataset.l,el));
+ if(cur.fig!=="lub"&&cur.sel)detalhe(d,cur.sel,id,true);
+}
+
+function pontos(d,fig,hl){
+ if(fig==="lub")return d.lubr.map((p,i)=>`<button class="pt ${p[2]==="o"?"oil":""} ${hl&&hl.includes(p[0])?"hl":""}" data-l="${i}" style="left:${p[3]}%;top:${p[4]}%" aria-label="Ponto ${p[0]}: ${p[1]}">${p[0]}</button>`).join("");
+ return d.comp.flatMap(c=>c.hs.filter(h=>h[0]===fig).map(h=>`<button class="pt ${cur.sel===c.id?"sel":""}" data-c="${c.id}" style="left:${h[1]}%;top:${h[2]}%" aria-label="${c.n}">${h[3]}</button>`)).join("");
+}
+
+function lubPonto(d,i,el){
+ const p=d.lubr[i],o=p[2]==="o";
+ app.querySelectorAll(".pt").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");
+ $("#info").innerHTML=`<h2 style="font-size:1.2rem">Ponto ${p[0]}: ${p[1]}</h2><div class="lub" style="border-color:${o?"var(--oil)":"var(--brass)"}"><b>${o?"□ Óleo":"△ Graxa"}</b><br>${o?"Shell Tellus 32 (rolamentos inacessíveis à graxa e rolamentos da chave auxiliar S1)":"Isoflex Topas L 32 (rolamentos e superfícies deslizantes)"}</div>${aviso()}`;
+}
+const aviso=()=>`<div class="warn">Antes de lubrificar: abrir, isolar e aterrar o disjuntor, desligar a alimentação auxiliar e descarregar as molas (Manual 8.1 e 8.3). Mova levemente as juntas nos dois sentidos para o lubrificante entrar e opere o disjuntor algumas vezes depois.</div>`;
+
+function detalhe(d,cid,id,keep){
+ const c=d.comp.find(x=>x.id===cid);cur.sel=cid;
+ if(!keep){app.querySelectorAll(".pt").forEach(x=>x.classList.toggle("sel",x.dataset.c===cid))}
+ $("#info").innerHTML=`<h2 style="font-size:1.2rem">${c.n}</h2><dl><dt>O que é e para que serve</dt><dd>${c.f}</dd><dt>Onde achar no projeto</dt><dd>${c.proj}</dd></dl>
+ <div class="row"><button id="bt">Detalhes técnicos</button><button id="bl">Lubrificação</button></div><div id="ex"></div>`;
+ const ex=$("#ex");
+ $("#bt").onclick=()=>ex.innerHTML=`<div class="lub" style="border-color:var(--ink);background:#eef2f4"><b>Dados técnicos</b><br>${c.tec}</div>`;
+ $("#bl").onclick=()=>{ex.innerHTML=c.lub?`<div class="lub"><b>Lubrificação</b><br>${c.lub}</div><div class="row"><button id="vf">Ver pontos na figura</button></div>${aviso()}`:`<div class="lub"><b>Lubrificação</b><br>Este componente não tem ponto de lubrificação indicado no manual.</div>`;
+  const v=$("#vf");if(v)v.onclick=()=>interno(id,"lub",c.ll)};
+}
+
+go(shelf);
+</script>
+</body>
+</html>
