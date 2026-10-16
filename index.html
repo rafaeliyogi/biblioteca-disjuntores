@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biblioteca de Disjuntores</title>
+<meta name="description" content="Biblioteca interativa de disjuntores de média e alta tensão: componentes, lubrificação, ensaio de fábrica e checklist de preventiva.">
+<meta name="theme-color" content="#14202b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2314202b'/%3E%3Cpath d='M36 6 16 36h14l-4 22 22-32H34z' fill='%23c89b3c'/%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--ink:#14202b;--bg:#dfe6ea;--wood:#4a2f1e;--wood2:#6b4630;--brass:#c89b3c;--red:#b3261e;--panel:#f5f7f8;--line:#b9c4cb;--oil:#2f7db8}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.5 system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:var(--ink);color:#fff;padding:14px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+header h1{font:700 1.25rem Georgia,serif;margin:0;flex:1}
+button{font:inherit;cursor:pointer;border:1px solid var(--ink);background:var(--panel);color:var(--ink);padding:8px 14px;border-radius:4px}
+button:hover{background:var(--brass)}button:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+button.on{background:var(--ink);color:#fff}
+header button{border-color:#fff;background:transparent;color:#fff}header button:hover{color:var(--ink)}
+main{max-width:1000px;margin:0 auto;padding:20px}
+h2{font:700 1.5rem Georgia,serif;margin:.2em 0 .6em}
+.shelf{background:var(--wood);border-radius:6px;padding:14px 14px 0;margin-bottom:22px}
+.books{display:flex;gap:10px;align-items:flex-end;min-height:150px}
+.board{height:14px;background:var(--wood2);margin:0 -14px;border-top:3px solid #2e1c10}
+.book{width:74px;height:150px;border-radius:3px 3px 0 0;color:#fff;display:flex;align-items:center;justify-content:center;writing-mode:vertical-rl;font:700 1.05rem Georgia,serif;border:2px solid rgba(255,255,255,.35);border-bottom:0}
+.book.off{opacity:.4;cursor:default;height:130px}
+.cap{color:#f3e3c0;font:600 .95rem system-ui;margin:0 0 10px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.book{width:62px}}
+.fig{position:relative;display:block;margin:0 auto;width:100%;max-width:var(--mw,560px);line-height:0}
+.fig img{width:100%;height:auto;display:block;border-radius:4px;background:#fff;transition:transform .5s,opacity .5s}
+.fig.go img{transform:scale(1.15);opacity:0}
+.pt{position:absolute;transform:translate(-50%,-50%);min-width:22px;height:22px;border-radius:11px;padding:0 4px;background:rgba(200,155,60,.88);border:2px solid var(--ink);font:700 10px/1 system-ui;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.pt:hover,.pt.sel{background:var(--red);color:#fff;z-index:2;box-shadow:0 0 0 3px rgba(179,38,30,.35)}
+.pt.oil{background:rgba(47,125,184,.9);color:#fff}
+.pt.hl{outline:3px solid var(--red);outline-offset:2px}
+.pt.hint{width:34px;height:34px;border-radius:50%;animation:p 1.4s infinite;font-size:16px}
+@keyframes p{50%{box-shadow:0 0 0 12px rgba(200,155,60,0)}0%{box-shadow:0 0 0 0 rgba(200,155,60,.9)}}
+.tag{display:inline-block;background:var(--ink);color:#fff;border-radius:3px;padding:1px 8px;font-size:.85rem}
+dl{margin:.4em 0}dt{font-weight:700;margin-top:.7em}dd{margin:0}
+.warn{border-left:5px solid var(--red);background:#fbe9e7;padding:8px 12px;margin-top:12px;font-size:.92rem}
+.lub{border-left:5px solid var(--brass);background:#fbf3de;padding:8px 12px;margin-top:8px}
+.hide{display:none}.note{font-size:.85rem;color:#44525d;margin:.6em 0 0}
+.chips button{font-size:.85rem;padding:4px 10px}
+
+.zb{line-height:1.2;font-size:.8rem;padding:4px 8px}
+@media(min-width:761px){.grid.wide{grid-template-columns:1.9fr 1fr}}
+.figw{width:100%;margin:0 auto}.zbar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 8px}
+.lb{position:fixed;inset:0;background:rgba(10,18,25,.96);z-index:50;display:flex;flex-direction:column;--z:1}
+.lbt{display:flex;gap:8px;align-items:center;padding:8px 12px;flex-wrap:wrap;color:#fff;font-size:.85rem}
+.lbv{flex:1;position:relative;overflow:hidden;touch-action:none;cursor:grab}
+.lbc{position:absolute;left:0;top:0;transform-origin:0 0}
+.lb .pt{transform:translate(-50%,-50%) scale(calc(1 / var(--z)))}
+.lb .fig img{transition:none}
+ol{padding-left:1.2em;margin:.3em 0}
+
+button:disabled{opacity:.55;cursor:not-allowed}button:disabled:hover{background:var(--panel)}
+.nopts .pt:not(.hint){display:none}
+.tb{border-collapse:collapse;width:100%;font-size:.88rem}
+.tb th,.tb td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;vertical-align:top}
+.tb th{font-weight:600}.tb .gr th{background:#e3eaee;font-size:.82rem;text-transform:uppercase;letter-spacing:.03em}
+.tbw{overflow-x:auto}.ok{color:#1b6b3a;font-weight:700}.bad{color:var(--red);font-weight:700}
+
+footer{max-width:1000px;margin:0 auto;padding:8px 20px 28px;font-size:.8rem;color:#44525d}
+@media (pointer:coarse){.pt{min-width:30px;height:30px;border-radius:15px;font-size:11px}}
+.chk{display:flex;gap:8px;align-items:flex-start;margin:.35em 0}.chk input{margin-top:.3em;width:18px;height:18px;flex:none}
+.fld{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}.fld label{display:flex;flex-direction:column;font-size:.85rem;gap:2px}
+.fld input{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:4px;min-width:160px}
+.pr header,.pr footer,.pr #app>:not(#extra),.pr .noprint,.pr .zb{display:none!important}.pr body,body.pr{background:#fff}
+@media print{header,footer,#app>:not(#extra),.noprint,.zb{display:none!important}body{background:#fff}.card{border:0}}
+@media(prefers-reduced-motion:reduce){.fig img{transition:none}.pt.hint{animation:none}}
+</style>
+</head>
+<body>
+<header><h1>Biblioteca de Disjuntores</h1><button id="back" class="hide">← Voltar</button></header>
+<main id="app"></main>
+<footer><p>Material de consulta montado a partir do manual Siemens 3AF 01 (4P-0080-03-95273-001AB), do catálogo EM-MS-OVCB40.5kV-001 e de documentos do próprio equipamento. Uso por pessoal qualificado. Confirme sempre na placa, no projeto e no manual do equipamento instalado. Versão de 12/10/2026.</p></footer>
+
+<script>
+/* ============ DADOS ============ */
+const CLASSES=[
+ {kv:"138 kV",cor:"#2c4a6b",itens:[]},
+ {kv:"69 kV",cor:"#5a3d6b",itens:[]},
+ {kv:"34,5 kV",cor:"#1f5c4d",itens:["3AF01"]},
+ {kv:"13,8 kV",cor:"#7a4a1e",itens:[]}
+];
+const GR="graxa Isoflex Topas L 32 (△)", OL="óleo Shell Tellus 32 (□)";
+const DISJ={"3AF01":{
+ marca:"Siemens",modelo:"3AF01 – Disjuntor a vácuo externo",classe:"34,5 kV (36/40,5 kV)",
+ resumo:"Tripolar externo, mecanismo de mola com armazenamento de energia. 1600/2000/2500 A, 25/26,3/31,5 kA, IP55.",
+ base:"",
+ docs:{projeto:null,manual:"docs/20181126-Operating-Instructions-Manual-3AF-Outdoor-Vacuum-Switchgear-36-kV-PT.pdf",manualEn:"https://assets.new.siemens.com/siemens/assets/api/uuid:1e67b134-7556-4c41-93c9-4dfbdbc6511c/Operating-Instructions-Manual-3AF-Outdoor-Vacuum-Switchgear-36-kV.pdf",catalogo:"docs/7715-new-40-5kv-t-type-ovcb-pt.pdf"},
+ placa:["Designação do tipo","Código do modelo","Número de série","Ano de fabricação","Tensão nominal / Frequência","Corrente nominal normal","Corrente nom. de int. de curto-circuito","Duração do curto-circuito nominal","Tensão nom. suportável de impulso atmosférico","Peso","Nº e data da ordem de compra","Operação nominal"],
+ dv:["Temperatura ambiente: manual -25 a +55 °C (seção 2.3.1); catálogo -40 a +40 °C (versão -60 °C sob consulta).","Correntes nominais: manual 1250, 1600 e 2000 A; catálogo 1600, 2000 e 2500 A. A versão de 31,5 kA só consta no catálogo.","Interruptor auxiliar: manual 5NA+5NF (ou 11+11); catálogo 6NA+6NF (ou 12+12).","Peso aproximado: manual 650 kg; catálogo 570 kg.","Distância de fuga do isolador: 1320 mm no texto do manual, 900 mm ou 1300 mm na lista de peças.","Referências cruzadas do manual com numeração errada: as seções 8.2, 8.5, 8.6 e 8.8 citam itens 7.x (e 8.13 cita o item 5.4) onde o correto parece ser 8.x e 6.4."],
+ placaNota:"Fica na carcaça do mecanismo (Manual, seção 2.1.1, Fig. 2).",
+ maçaneta:[80.4,49.6],
+ figs:{
+  rmec:{t:"Mecanismo (visão geral)",img:"real_mecanismo.jpg",mw:"980px"},
+  rfre:{t:"Frente com tampa",img:"real_frente.jpg",mw:"520px"},
+  resq:{t:"Detalhe esquerdo",img:"real_esq.jpg",mw:"520px"},
+  rdir:{t:"Detalhe direito",img:"real_dir.jpg",mw:"520px"},
+  rcmd:{t:"Comando: relés e proteções",img:"real_comando.jpg",mw:"980px"},
+  rpan:{t:"Painel e borneiras",img:"real_painel.jpg",mw:"460px"},
+  fmec:{t:"Foto do catálogo (40,5 kV)",img:"fotomecanismo.jpg",mw:"760px"},
+  mec:{t:"Mecanismo (Fig. 11)",img:"mecanismo.jpg",mw:"640px"},
+  ext:{t:"Vista externa (Fig. 1)",img:"externa.jpg",mw:"340px"},
+  fpolo:{t:"Polo em corte (catálogo)",img:"polocatalogo.jpg",mw:"260px"},
+  polo:{t:"Polo em corte (Fig. 7)",img:"polo.jpg",mw:"430px"},
+  vac9:{t:"Interruptor a vácuo (Fig. 9)",img:"vacuo.jpg",mw:"300px"},
+  ero:{t:"Erosão do contato (Fig. 12A)",img:"erosao.jpg",mw:"560px"},
+  ele:{t:"Elétrico (Fig. 16)",img:"eletrico.jpg",mw:"980px"},
+  lub:{t:"Lubrificação (Fig. 13)",img:"lubrificacao.jpg",mw:"560px"}
+ },
+ comp:[
+ {id:"vac",n:"Interruptor a vácuo",f:"Câmara onde os contatos abrem e fecham. O arco é extinto no vácuo na primeira passagem da corrente por zero.",proj:"Manual Fig. 7 (item 17) e Fig. 9, pág. 6. Seção 3.2.",tec:"Tipo VS36025 (código 3AY1716-1A). Erosão máxima do contato: 3 mm. Vida: 10.000 operações mecânicas.",hs:[["polo",91,15.6,"17"]]},
+ {id:"iso",n:"Isolador de porcelana",f:"Isola a parte energizada da estrutura. Distância de fuga de 1320 mm, adequado para poluição muito alta.",proj:"Manual Fig. 7 (item 18), pág. 6. Seção 2.3.1.",tec:"Limpar só com pano úmido e detergente neutro, com o disjuntor aberto e as molas descarregadas. O manual cita fuga de 1320 mm (seção 2.3.1), mas a lista de peças (8.10) traz polos de 900 mm e 1300 mm: confirme qual é o do seu equipamento.",hs:[["polo",91,32,"18"]]},
+ {id:"hst",n:"Haste de comutação",f:"Transmite o movimento do mecanismo ao contato móvel do interruptor a vácuo.",proj:"Manual Fig. 7 (itens 6 e 27), pág. 6. Seções 3.4 e 8.6. No catálogo (pág. 6) é o item 10.",tec:"Teste de vácuo: ao retirar o pino, a haste deve ser puxada para cima pelo vácuo (seção 8.6).",hs:[["polo",13.8,34.6,"27"],["polo",91,30.3,"6"],["fpolo",48,70.3,"10"]]},
+ {id:"mpc",n:"Mola de pressão de contato",f:"Mantém a pressão de contato com o disjuntor fechado e compensa automaticamente a pequena erosão dos contatos.",proj:"Manual Fig. 7 (item 19), pág. 6. Seção 3.4.",tec:"É carregada durante o fechamento. A pressão atmosférica também ajuda a manter os contatos fechados.",hs:[["polo",91,44.1,"19"]]},
+ {id:"mot",n:"Motor de carga",f:"Carrega a mola de fechamento. Recarrega sozinho em até 15 s após cada fechamento.",proj:"Manual Fig. 11 (item 2), pág. 13. Seção 4.2.",tec:"Cerca de 770 W (CC) ou 900 VA (CA). Tensão de -15% a +10% do nominal. Peça 3AY15 11 (110/220 V CC).",hs:[["mec",31.9,94,"2"]]},
+ {id:"mf",n:"Mola de fechamento",f:"Armazena a energia que fecha o disjuntor. Ao fechar, também carrega a mola de abertura.",proj:"Manual Fig. 11 (item 12), pág. 13. Seção 3.4.",tec:"Carga manual com a manivela (abertura, item 15). O indicador de mola carregada é o item 8.",hs:[["mec",4.6,35.3,"12"]]},
+ {id:"ma",n:"Mola de abertura",f:"Fornece a energia para abrir os contatos e os mantém abertos.",proj:"Manual Fig. 11 (item 13), pág. 13.",tec:"A guia (g) e o pino (p) da mola têm pontos de lubrificação.",lub:"Ponto <b>g</b> (guia da mola de abertura): "+GR+".<br>Ponto <b>p</b> (pino da mola de abertura): "+OL+".",ll:["g","p"],hs:[["mec",56.2,94,"13"]]},
+ {id:"bt",n:"Botões ON e OFF",f:"Botão mecânico ON destrava a mola de fechamento e fecha o disjuntor. O botão OFF abre.",proj:"Manual Fig. 11 (itens 3 e 6), pág. 13. Seções 7.4 e 7.5.",tec:"Servem para operação local. Em campo, siga sempre os procedimentos de manobra da sua instalação.",hs:[["mec",60.5,5.8,"3"],["mec",66.5,5.8,"6"]]},
+ {id:"y9",n:"Solenoide de fechamento (Y9)",f:"Destrava a mola de fechamento carregada e fecha o disjuntor por comando elétrico.",proj:"Manual Fig. 11 (item 4), pág. 13. Seção 4.3.1. Na foto real a posição do ponto é aproximada.",tec:"Tipo 3AY1510. Cerca de 200 W/VA. Pulso mínimo de 40 ms. Tensão de -15% a +10%. Não é para operação contínua.",hs:[["mec",93,41.9,"4"]]},
+ {id:"y1",n:"1º disparador em derivação (Y1)",f:"Abre o disjuntor por comando elétrico (proteção ou manobra).",proj:"Manual Fig. 11 (item 5), pág. 13. Seção 4.3.2. Na foto real a posição do ponto é aproximada.",tec:"Tipo 3AY1510. Cerca de 200 W/VA. Pulso mínimo de 40 ms. Tensão de -30% a +10% (CC) ou -15% a +10% (CA). Tempo de abertura ≤ 65 ms.",hs:[["mec",93,44.9,"5"]]},
+ {id:"aux",n:"Interruptor auxiliar (S1)",f:"Acionado pelo eixo do disjuntor. Comuta os circuitos auxiliares e dá a sinalização de posição.",proj:"Manual Fig. 11 (item 14), pág. 13. Seção 4.4.",tec:"5NA+5NF (opcional 11+11). 250 V, 10 A. Tipo 3SV92 21 / 3SV92 22. O catálogo cita 6NA+6NF ou 12NA+12NF.",lub:"Ponto <b>e</b> (alavanca de operação da chave auxiliar) e ponto <b>h</b> (haste de operação): "+GR+".<br>Ponto <b>f</b> (chave auxiliar S1): "+OL+".",ll:["e","f","h"],hs:[["mec",94.1,31.5,"14"]]},
+ {id:"cnt",n:"Contador e indicadores",f:"Mostram LIG/DESL, mola carregada ou descarregada e o número de operações. Visíveis pelo visor da porta.",proj:"Manual Fig. 11 (itens 8, 9 e 16), pág. 13.",tec:"Indicador LIG = símbolo \"I\". DESL = símbolo \"O\".",hs:[["mec",5.4,53.2,"8"],["mec",5.4,63.3,"9"],["mec",4.6,73.4,"16"]]},
+ {id:"eix",n:"Eixo de acionamento / manobra",f:"Leva a força do mecanismo às hastes dos três polos pelo eixo comum.",proj:"Manual Fig. 11 (item 17) e Fig. 7 (itens 20 e 23), págs. 6 e 13.",tec:"O comprimento do tirante é ajustado em fábrica. Não altere.",lub:"Ponto <b>j</b> (rolamento do eixo de manobra): "+OL+".<br>Ponto <b>l</b> (alavanca no eixo de manobra) e ponto <b>k</b> (alavanca do bloco de desligamento): "+GR+".",ll:["j","k","l"],hs:[["mec",94.1,69.9,"17"],["polo",14,78.3,"20,23"]]},
+ {id:"aqc",n:"Aquecedor (E11)",f:"Evita condensação de umidade, principalmente nos isolantes.",proj:"Manual seção 7.6, pág. 13. Peça 4396201101. Não aparece numerado nas figuras.",tec:"100 W, 240 V CA. Deve ficar sempre ligado, com o disjuntor em operação ou não.",hs:[]}
+ ],
+ lubr:[
+  ["a","Alavanca de disparo","g",22.5,4.7],["b","Rolamento da alavanca","o",43.4,4.7],["c","Disco excêntrico","g",50.9,4.7],["d","Alavanca do bloco de ligação","g",58.1,4.7],
+  ["e","Alavanca de operação da chave auxiliar","g",94.7,32.8],["f","Chave auxiliar (S1)","o",94.7,39.4],["g","Guia da mola de abertura","g",94.7,56.3],["h","Haste de operação da chave auxiliar","g",94.7,70.6],
+  ["j","Rolamento do eixo de manobra (direito)","o",94.7,75.6],["j","Rolamento do eixo de manobra (esquerdo)","o",3.1,86.3],
+  ["p","Pino da mola de abertura","o",45.9,93.8],["m","Placa de isolamento","g",54.7,93.8],["l","Alavanca no eixo de manobra","g",63.4,93.8],["k","Alavanca do bloco de desligamento","g",68.8,93.8]
+ ]
+}};
+
+
+const EX=[["vac","fpolo",48,37.8,"5"],["iso","fpolo",69,23.4,"6"],["mf","fmec",38.8,54.9,"12"],["ma","fmec",50.9,57.5,"13"],["cnt","fmec",37.3,71.3,"16"],["eix","fmec",62.1,69.2,"17"],["aux","fmec",66.8,44.4,"14"],["y9","fmec",56.1,51.4,"4"],["y1","fmec",59.6,52.8,"5"]];
+const NEW=[
+["cx","Caixa do mecanismo","Carcaça metálica que abriga o mecanismo, os disparadores, os interruptores auxiliares e o painel de controle. Protege contra poeira, umidade e insetos.","Manual Fig. 11 (item 1) e Fig. 7 (item 11), págs. 6 e 13. Fig. 1 (item G).","A placa nominal fica nesta carcaça. Mantenha portas e tampas bem fechadas.",[["mec",5.4,41.1,"1"],["polo",91,56.2,"11"]]],
+["arm","Armação de chapa de aço","Estrutura de chapa onde os componentes do mecanismo são fixados.","Manual Fig. 11 (item 10), pág. 13.","",[["mec",4.6,19.5,"10"]],1],
+["hdd","Haste de operação de disparo","Haste do conjunto de disparo do mecanismo. Aparece só na legenda da Fig. 11, sem marcação no desenho.","Manual Fig. 11 (item 7), pág. 13.","",[],1],
+["abs","Absorvedor de impacto","Amortece os choques do mecanismo no fim do curso.","Manual Fig. 11 (item 11), pág. 13.","",[["mec",38.1,94,"11"]],1],
+["alm","Abertura para a alavanca manual","Encaixe da manivela que carrega a mola de fechamento (sentido horário, até aparecer 'mola carregada'). Usado em manutenção ou falta de energia.","Manual Fig. 11 (item 15), pág. 13. Seção 7.3.","A manivela é acoplada por dispositivo de separação: se a alimentação voltar durante a carga, o operador não fica exposto.",[["mec",4.6,27.4,"15"]]],
+["pin","Pino do eixo de acionamento","Na operação de fechamento lento, a alavanca manual é inserida entre o eixo de acionamento (17) e este pino (18).","Manual Fig. 11 (item 18), pág. 13. Seção 7.1.","",[["mec",44.9,94,"18"]]],
+["plc","Placas de isolamento","Placas do mecanismo. No original em inglês da Fig. 13 a legenda é 'damping plate' (placa de amortecimento).","Manual Fig. 11 (item 19) e Fig. 13 (ponto m), págs. 13 e 14.","",[["mec",50.5,94,"19"]],1,"Ponto <b>m</b> (placa de isolamento): GRX.",["m"]],
+["dad","Disparadores adicionais (opcionais)","Disparadores complementares: 2º em derivação (Y3), em derivação comp. (Y2), operado por TC (Y4) e de subtensão (Y7). Dão redundância e proteção extra.","Manual Fig. 11 (item 20), pág. 13. Seções 4.3.3 a 4.3.6 e Tabela 4.","Y2 3AX1101 (cerca de 60 W/100 VA). Y3 3AY1510 (cerca de 200 W/VA). Y4 3AX1102 (0,5 A, até 6 VA). Y7 3AX1103 (6,5 W ou até 7,5 VA).",[["mec",94.1,51,"20"]]],
+["itd","Interruptor de disparo","Interruptor ligado ao circuito de disparo do mecanismo.","Manual Fig. 11 (item 21), pág. 13. Veja também o diagrama elétrico (seção 8.15).","",[["mec",4.6,46.8,"21"]],1],
+["plq","Placa nominal","Placa de identificação com tipo, série, tensões, correntes e ano de fabricação.","Manual Fig. 11 (item 22), pág. 13. Seção 2.1.1 e Fig. 2.","Informe tipo, código do modelo, ano e nº de série ao pedir peças ou polos de reposição.",[["mec",35.4,5.8,"22"],["fmec",46.2,37.5,"22"]]],
+["tir","Tirante do interruptor auxiliar","Haste que leva o movimento do eixo ao interruptor auxiliar S1. Provavelmente corresponde ao ponto h (haste de operação da chave auxiliar) da Fig. 13; o manual não faz essa ligação de forma explícita.","Manual Fig. 11 (item 23), pág. 13.","",[["mec",94.1,58.4,"23"]],1,"Ponto <b>h</b> (haste de operação da chave auxiliar): GRX.",["h"]],
+["cjp","Conjunto do interruptor","Interruptor a vácuo montado dentro do isolador de porcelana. Com o suporte do isolador forma o conjunto do polo vedado.","Manual Fig. 7 (item 1), pág. 6. Seção 3.1.","Peça de reposição: conjunto de polo vedado (seção 8.10, item 18).",[["polo",91,11.3,"1"]]],
+["bas","Estrutura de base","Estrutura onde os três polos são montados, com eixo de operação comum. Fica sobre a carcaça do mecanismo.","Manual Fig. 7 (item 2), pág. 6. Seção 3.1.","Os terminais de aterramento ficam nesta estrutura (Fig. 1, item L).",[["polo",91,40.3,"2"]]],
+["aco","Estrutura de aço","Suporte que sustenta o disjuntor e mantém os terminais a distância segura do solo.","Manual Fig. 7 (item 3), pág. 6. Seção 3.1.","Fixada nos parafusos de fundação M20 x 400.",[["polo",91,52.8,"3"]]],
+["tr4","Tirante","Haste vertical que liga o eixo de acionamento (embaixo) ao eixo de manobra (em cima), levando o movimento aos polos.","Manual Fig. 7 (item 4), pág. 6. Seção 3.4. Não consta na legenda da figura.","O comprimento é ajustado em fábrica. Não altere.",[["polo",17.8,53.1,"4"]]],
+["emn","Eixo de manobra","Eixo comum aos três polos. Recebe o movimento do tirante e o passa às hastes de comutação.","Manual Fig. 7 (item 5), pág. 6. Seção 3.4.","",[["polo",91,47.7,"5"]],0,"Ponto <b>j</b> (rolamento do eixo de manobra): OLX.",["j"]],
+["m7","Manivela de fechamento lento","Alavanca manual opcional para fechar e abrir lentamente o disjuntor (comissionamento). Peça 4110490001.","Manual Fig. 7 (item 7), pág. 6. Seções 7.1 e 7.2.","Mantenha pressão para baixo na alavanca e libere aos poucos. Retire-a depois.",[["polo",91,75.6,"7"]]],
+["al8","Alavanca","Alavanca do eixo onde o tirante é conectado.","Manual Fig. 7 (item 8), pág. 6. Seção 8.13 (item 1).","",[["polo",95,79.1,"8"]],1],
+["fix","Pinos, arruelas e anel de segurança","Fixam as articulações do mecanismo. O anel (15) e o pino (16) prendem a haste de comutação e são retirados no teste de vácuo (seção 8.6).","Manual Fig. 7 (itens 9, 10, 12, 13, 14, 15 e 16), pág. 6.","Arruela de travamento solta ou exposta deve ser substituída (seção 6.4).",[["polo",22.8,79.7,"9"],["polo",31,82,"10"],["polo",88,77.7,"12"],["polo",10.9,43.8,"13,14"],["polo",10.9,41.4,"15,16"]]],
+["m24","Mecanismo de operação","Mecanismo de mola com armazenamento de energia, dentro da carcaça.","Manual Fig. 7 (item 24), pág. 6. Seção 4.1.","Sequência nominal O - 0,3 s - CO - 3 min - CO.",[["polo",91,60.8,"24"]]],
+["nrv","Válvula de retenção (NRV, opcional)","Válvula opcional do conjunto do polo.","Manual Fig. 7 (item 30), pág. 6. Seção 4.","",[["polo",91,36.8,"30"]],1],
+["cm","Contato móvel","Contato que se desloca dentro do guia para abrir e fechar o circuito.","Manual Fig. 9 (item 1), pág. 6. Seção 3.2.","Erosão máxima permitida: 3 mm (seção 8.5).",[["vac9",92,45.8,"1"]]],
+["gd","Guia","Guia dentro do qual o contato móvel se desloca.","Manual Fig. 9 (item 2), pág. 6. Seção 3.2.","",[["vac9",83.7,81.1,"2"]]],
+["fol","Foles de metal","Acompanham o movimento do contato móvel e vedam o interruptor, mantendo o vácuo.","Manual Fig. 9 (item 3), pág. 6. Seção 3.2.","",[["vac9",86.3,65.9,"3"]]],
+["cf","Contato fixo","Contato que fica parado na parte superior da câmara. Os contatos têm geometria especial que desloca o arco.","Manual Fig. 9 (item 4), pág. 6. Seção 3.3.","",[["vac9",92,36.3,"4"]]],
+["isv","Isolador do interruptor","Corpo cerâmico do interruptor a vácuo, que isola os terminais entre si.","Manual Fig. 9 (item 5), pág. 6.","",[["vac9",92,19.6,"5"]],1],
+["cam","Câmara de extinção de arco elétrico","Blindagem interna que recebe o vapor metálico do arco e ajuda a extingui-lo.","Manual Fig. 9 (item 6), pág. 6. Seção 3.3.","Tensão do arco entre 20 e 200 V. Corrente cortada limitada a 4-5 A (seção 3.3).",[["vac9",92,40.5,"6"]],1],
+["ts","Conector terminal superior","Terminal de ligação da linha, fixado firmemente à extremidade superior do interruptor a vácuo.","Catálogo pág. 6 (item 7). Manual Fig. 1 (item E) e Fig. 6.","Bloco de alumínio, 110 x 15 mm, 4 furos Ø14. Parafusos M12 classe 8, torque 70 Nm (barramento).",[["fpolo",12,3.8,"7"]]],
+["ti","Conector terminal inferior","Terminal de ligação da linha, ligado ao contato móvel por conectores flexíveis.","Catálogo pág. 6 (item 8). Manual Fig. 1 (item F) e Fig. 6.","Mesmo bloco de terminais do superior.",[["fpolo",78,48.6,"8"]]],
+["cfx","Conector flexível","Liga o contato móvel ao terminal inferior e permite o movimento axial do contato.","Catálogo pág. 6 (item 9).","",[["fpolo",42,53.2,"9"]]],
+["lmp","Lâmpada de iluminação","Lâmpada incandescente que ilumina o interior da carcaça durante o serviço.","Visível na foto. Manual seção 8.13 (O que não fazer, item 2).","Não deixe a lâmpada acesa ao fechar a porta.",[["fmec",44.3,19,"L"]]],
+["mcb","Minidisjuntores (MCB) e blocos de terminais","MCBs que protegem os circuitos auxiliares. Os cabos de controle chegam aos blocos de terminais do painel.","Manual Fig. 10 (itens 1 e 4) e seção 8.15.","Minidisjuntores de 2 A, 4 A ou 6 A, 2 polos, 240 V CA (seção 8.10, item 4). Podem ser trocados por fusíveis sob consulta.",[["fmec",79.2,45.4,"C"]]],
+["chl","Chave Local/Remoto","Seleciona se o disjuntor é operado localmente ou à distância pela sala de controle.","Manual Fig. 10 (item 2), seção 3.1. Peça 4113488907 (S13).","",[["fmec",80.7,59.3,"D"]]],
+["chd","Chave LIG/DESL do disjuntor","Comando elétrico local de fechamento e abertura, no painel de controle.","Manual Fig. 10 (item 3), seções 3.1 e 7.5. Peça 4394570001 (S14).","",[["fmec",80.7,69.2,"E"]]],
+["viz","Visor de indicações mecânicas","Janela de plexiglass na porta para ver LIG/DESL, mola carregada e contador sem abrir a porta.","Manual Fig. 10 (item 13) e Fig. 1 (item J).","",[["fmec",27.2,64.4,"V"]]],
+["man","Manivela de carga da mola","Alavanca manual para carregar a mola de fechamento. Fica guardada na porta da carcaça.","Manual seções 7.3 e 8.13 (item 5). Peça 3AX1530-3B.","Mantenha sempre na carcaça do mecanismo.",[["fmec",20.2,44.4,"M"]]]
+];
+{const D=DISJ["3AF01"];
+ EX.forEach(e=>D.comp.find(c=>c.id===e[0]).hs.push([e[1],e[2],e[3],e[4]]));
+ NEW.forEach(r=>{const o={id:r[0],n:r[1],f:r[2],proj:r[3],tec:r[4]||"",hs:r[5]||[],g:r[6]};if(r[7]){o.lub=r[7].replace("GRX",GR).replace("OLX",OL);o.ll=r[8]}D.comp.push(o)});
+ NEW.filter(r=>r[0]==="cx").forEach(()=>{});
+}
+
+/* ============ NAVEGAÇÃO ============ */
+const app=document.getElementById("app"),back=document.getElementById("back");
+let stack=[];
+let canPush=true;
+function go(fn){stack.push(fn);fn();back.classList.toggle("hide",stack.length<2);if(stack.length>1&&canPush){try{history.pushState({d:stack.length},"")}catch(e){canPush=false}}}
+function pop(){if(stack.length>1){stack.pop();stack[stack.length-1]();back.classList.toggle("hide",stack.length<2)}}
+back.onclick=()=>{if(canPush)history.back();else pop()};
+window.addEventListener("popstate",pop);
+const $=s=>document.querySelector(s);
+
+function shelf(){
+ app.innerHTML='<h2>Escolha a classe de tensão</h2><p>Cada prateleira é uma classe. Livros apagados ainda não têm modelos cadastrados.</p>'+
+ CLASSES.map(c=>`<div class="shelf"><p class="cap">${c.kv}</p><div class="books">${
+  c.itens.length?c.itens.map(i=>`<button class="book" style="background:${c.cor}" data-m="${i}">${DISJ[i].marca} ${i}</button>`).join(""):`<div class="book off" style="background:${c.cor}" aria-hidden="true">vazio</div>`
+ }</div><div class="board"></div></div>`).join("");
+ app.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>go(()=>ficha(b.dataset.m)));
+}
+
+function ficha(id){
+ const d=DISJ[id],[mx,my]=d.maçaneta;
+ app.innerHTML=`<h2>${d.marca} ${d.modelo}</h2><div class="grid"><div class="card"><div class="fig" id="fig" style="--mw:300px"><img src="${d.base}externa.jpg" alt="Foto do disjuntor ${id}">
+ <button class="pt hint" id="handle" style="left:${mx}%;top:${my}%" aria-label="Abrir a porta do mecanismo">⌂</button></div><p class="note" style="text-align:center">Foto: catálogo Siemens. Clique no fecho da porta (ponto dourado).</p></div>
+ <div><div class="card"><p><span class="tag">${d.classe}</span></p><p>${d.resumo}</p>
+ <div class="row">${docBtn("Projeto",d.docs.projeto)}${docBtn("Manual (PT)",d.docs.manual)}${docBtn("Manual (EN)",d.docs.manualEn)}${docBtn("Catálogo",d.docs.catalogo)}<button id="pl">Placa</button><button id="en">Ensaio de fábrica</button><button id="pv">Preventiva</button><button id="rf">Referências</button><button id="pc">Peças</button></div>
+ <div id="placa" class="hide"></div></div>
+ <div class="card"><details><summary><b>Atenção: divergências entre manual e catálogo</b></summary><ul>${d.dv.map(x=>`<li>${x}</li>`).join("")}</ul><p class="note">Confirme sempre na placa e no projeto do equipamento instalado.</p></details></div></div></div><div id="extra"></div>`;
+ $("#pl").onclick=()=>showExtra("pl");$("#en").onclick=()=>showExtra("en");$("#pv").onclick=()=>showExtra("pv");$("#rf").onclick=()=>showExtra("rf");$("#pc").onclick=()=>showExtra("pc");
+ $("#handle").onclick=()=>{$("#fig").classList.add("go");setTimeout(()=>go(()=>interno(id)),520)};
+ addZoom();
+}
+
+let cur={fig:"rmec",sel:null};
+function interno(id,fig,hl){
+ const d=DISJ[id];cur.fig=fig||cur.fig||"mec";
+ app.innerHTML=`<h2>Por dentro do ${id}</h2><div class="row" style="margin:0 0 8px" id="grps">${Object.entries(GRP).map(([g,t])=>`<button data-g="${g}" class="${g===d.figs[cur.fig].g?'on':''}">${t}</button>`).join("")}</div><div class="row" style="margin:0 0 14px" id="tabs">${Object.entries(d.figs).filter(([k,v])=>v.g===d.figs[cur.fig].g).map(([k,v])=>`<button data-f="${k}" class="${k===cur.fig?'on':''}">${v.t}</button>`).join("")}</div>
+ <div class="grid ${parseInt(d.figs[cur.fig].mw)>=900?"wide":""}"><div class="card"><div class="fig" style="--mw:${d.figs[cur.fig].mw}"><img src="${d.base}${d.figs[cur.fig].img}" alt="${d.figs[cur.fig].t}">${pontos(d,cur.fig,hl)}</div>
+ <p class="note">${NOTA[d.figs[cur.fig].g]}</p></div>
+ <div class="card" id="info" aria-live="polite">${cur.fig==="lub"?`<p>Clique em uma letra para ver o ponto de lubrificação.</p><p><span class="tag" style="background:var(--brass);color:var(--ink)">△ ${GR.replace(" (△)","")}</span><br><span class="tag" style="background:var(--oil)">□ ${OL.replace(" (□)","")}</span></p><p class="note">Lubrificar a cada 4.000 operações (mais cedo em local com muita poeira). Manual, seção 8.4.</p>`:"<p>Clique em um ponto numerado (ou em um item da lista abaixo) para ver o que é, para que serve e onde achar no projeto.</p>"}</div></div>
+ ${cur.fig==="lub"?"":`<div class="card chips"><b>Componentes desta figura</b><div class="row">${d.comp.filter(c=>c.hs.some(h=>h[0]===cur.fig)||(!c.hs.length&&(!c.only||c.only===cur.fig))).map(c=>`<button data-c="${c.id}">${c.n}</button>`).join("")}</div></div>`}`;
+ $("#tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>interno(id,b.dataset.f));
+ $("#grps").querySelectorAll("button").forEach(b=>b.onclick=()=>interno(id,Object.keys(d.figs).find(k=>d.figs[k].g===b.dataset.g)));
+ app.querySelectorAll("[data-c]").forEach(el=>el.onclick=()=>detalhe(d,el.dataset.c,id));
+ app.querySelectorAll("[data-l]").forEach(el=>el.onclick=()=>lubPonto(d,+el.dataset.l,el));
+ if(cur.fig!=="lub"&&cur.sel)detalhe(d,cur.sel,id,true);
+ addZoom();if(cur.fig==="ele")diag();
+}
+
+function pontos(d,fig,hl){
+ if(fig==="lub")return d.lubr.map((p,i)=>`<button class="pt ${p[2]==="o"?"oil":""} ${hl&&hl.includes(p[0])?"hl":""}" data-l="${i}" style="left:${p[3]}%;top:${p[4]}%" aria-label="Ponto ${p[0]}: ${p[1]}">${p[0]}</button>`).join("");
+ return d.comp.flatMap(c=>c.hs.filter(h=>h[0]===fig).map(h=>`<button class="pt ${cur.sel===c.id?"sel":""}" data-c="${c.id}" style="left:${h[1]}%;top:${h[2]}%" aria-label="${c.n}">${h[3]}</button>`)).join("");
+}
+
+function lubPonto(d,i,el){
+ const p=d.lubr[i],o=p[2]==="o";
+ app.querySelectorAll(".pt").forEach(x=>x.classList.remove("sel"));el.classList.add("sel");
+ $("#info").innerHTML=`<h2 style="font-size:1.2rem">Ponto ${p[0]}: ${p[1]}</h2><div class="lub" style="border-color:${o?"var(--oil)":"var(--brass)"}"><b>${o?"□ Óleo":"△ Graxa"}</b><br>${o?"Shell Tellus 32 (rolamentos inacessíveis à graxa e rolamentos da chave auxiliar S1)":"Isoflex Topas L 32 (rolamentos e superfícies deslizantes)"}</div>${aviso()}`;
+}
+const aviso=()=>`<div class="warn">Para lubrificar, o manual (seções 8.1 e 8.3) pede o disjuntor aberto, a alimentação auxiliar desconectada e as molas descarregadas, com mãos e ferramentas longe de partes móveis. O isolamento e o aterramento da linha seguem o procedimento da sua empresa. Mova levemente as juntas nos dois sentidos para o lubrificante entrar e opere o disjuntor algumas vezes depois.</div>`;
+
+function detalhe(d,cid,id,keep){
+ const c=d.comp.find(x=>x.id===cid);cur.sel=cid;
+ if(!keep){app.querySelectorAll(".pt").forEach(x=>x.classList.toggle("sel",x.dataset.c===cid))}
+ $("#info").innerHTML=`<h2 style="font-size:1.2rem">${c.n}</h2><dl><dt>O que é e para que serve</dt><dd>${c.f}</dd><dt>Onde achar no projeto</dt><dd>${c.proj}</dd></dl>${c.g?'<p class="note">Função não detalhada no manual: descrição inferida pelo tipo do componente e pelas etiquetas. Confirme no projeto da unidade.</p>':""}
+ <div class="row"><button id="bt">Detalhes técnicos</button><button id="bl">Lubrificação</button></div><div id="ex"></div>`;
+ const ex=$("#ex");
+ $("#bt").onclick=()=>ex.innerHTML=`<div class="lub" style="border-color:var(--ink);background:#eef2f4"><b>Dados técnicos</b><br>${c.tec||"O manual não traz dados técnicos específicos para este item."}</div>`;
+ $("#bl").onclick=()=>{ex.innerHTML=c.lub?`<div class="lub"><b>Lubrificação</b><br>${c.lub}</div><div class="row"><button id="vf">Ver pontos na figura</button></div>${aviso()}`:`<div class="lub"><b>Lubrificação</b><br>Este componente não tem ponto de lubrificação indicado no manual.</div>`;
+  const v=$("#vf");if(v)v.onclick=()=>interno(id,"lub",c.ll)};
+}
+
+
+/* ===== ELÉTRICO ===== */
+{const D=DISJ["3AF01"],E=(id,h)=>D.comp.find(c=>c.id===id).hs.push(...h.map(x=>["ele",...x]));
+ E("mot",[[16.1,47.2,"M1"]]);E("y9",[[41.1,60.4,"Y9"]]);E("y1",[[68.8,60.4,"Y1"]]);
+ E("aux",[[39.4,36.8,"S1"],[69.6,36.2,"S1"],[91.7,23.7,"31-64"]]);
+ E("chl",[[38.6,7.4,"S13"]]);E("chd",[[36,20.1,"S14"]]);
+ E("mcb",[[10,75.7,"F21"],[35.1,75.7,"F22"],[11.9,81,"F23"]]);
+ E("aqc",[[33.6,91.8,"E11"]]);E("lmp",[[26.7,92.8,"H19"]]);
+ const N=[
+ ["k1","Relé anti-bombeamento (K1)","Contator auxiliar (2NA + 2NF) que impede o disjuntor de abrir e fechar continuamente quando recebe comandos LIG e DESL ao mesmo tempo.","Manual Fig. 16 (K1), seção 3.4 e seção 8.10 (item 8).","Tensão igual à do solenoide de fechamento: 24 V CC 3TH30220BB4, 30 V CC 3TH30220BC4, 110 V CC 3TH30220BF4, 220 V CC 3TH30220BM4.",[["ele",39.4,42.6,"K1"],["ele",50.8,60.4,"K1"]]],
+ ["s2122","Fim de curso do motor (S21 e S22)","Contatos em série com o motor M1. Cortam o motor quando a mola de fechamento está carregada.","Manual Fig. 16 (S21, S22), seções 4.2 e 8.14.","Interruptor de posição 3SE 4206 (peça 4107766996, seção 8.10 item 9).",[["ele",14.8,39,"S21"],["ele",14.8,55.8,"S22"]]],
+ ["s3","Interruptor de posição S3","Contato de posição que aparece duas vezes no circuito de fechamento do diagrama.","Manual Fig. 16 (S3), seção 8.10 (item 9).","Interruptor de posição 3SE 4206.",[["ele",37.8,31.4,"S3"],["ele",53.6,36.9,"S3"]],1],
+ ["s4","Interruptor de posição S4 (mola carregada)","Sinaliza 'mola de fechamento carregada' nos bornes X3.12 / X3.13.","Manual Fig. 16 (S4), seção 4 e seção 8.10 (item 9).","Interruptor de posição 3SE 4206. Equipamento complementar.",[["ele",59,42.6,"S4"]]],
+ ["bfx","Bornes de fechamento remoto (X3.3 / X3.4)","Entrada do comando de fechamento remoto.","Manual Fig. 16 e seção 8.14.","Sem fechamento remoto, os bornes precisam estar em curto. Comando contínuo aqui causa fechamento falso (8.14).",[["ele",47.1,15.3,"X3.3"]]],
+ ["bdx","Bornes de desarme remoto (X3.7 / X3.8 e X3.9)","Entrada do comando de desarme remoto. O X3.9 recebe o comando de desarme da bobina Y1.","Manual Fig. 16 e seção 8.14.","Sem desarme remoto, X3.7 e X3.8 precisam estar em curto. Comando contínuo em X3.9 causa desarme falso (8.14).",[["ele",73.3,14.6,"X3.7"],["ele",69.2,23.7,"X3.9"]]],
+ ["bit","Bornes de intertravamento do isolador (X3.5 / X3.6)","Ligação para intertravamento com o isolador no circuito de fechamento.","Manual Fig. 16 e seção 8.14.","Sem comando em X3.5/X3.6 o disjuntor não fecha (8.14).",[["ele",41.3,22.1,"X3.5"]]],
+ ["bind","Bornes de indicação de mola carregada (X3.12 / X3.13)","Saída de sinalização de mola carregada, via contato S4.","Manual Fig. 16.","",[["ele",61.7,22.9,"X3.12"],["ele",61.7,69.7,"X3.13"]]],
+ ["bal","Bornes de alimentação (X2.1/X2.2 e X3.1/X3.2)","X2.1/X2.2: alimentação CC do carregamento da mola (motor), via F21. X3.1/X3.2: alimentação de controle, via F22.","Manual Fig. 16.","Tensão do motor: -15% a +10% do nominal (seção 4.2).",[["ele",5,2.4,"X2.1"],["ele",4.2,76.4,"X2.2"],["ele",31.3,2.4,"X3.1"],["ele",30.8,76.4,"X3.2"],["ele",38.9,74,"X3.11"]]],
+ ["bac","Alimentação 240 V CA (X1.1 / X1.2)","Alimentação do aquecedor E11 e da lâmpada H19, protegida pelo MCB F23.","Manual Fig. 16 e seção 8.10 (item 5).","Aquecedor 100 W, 240 V CA.",[["ele",3.3,80.6,"X1.1"],["ele",3.3,94.7,"X1.2"]]],
+ ["s20","Interruptor S20 (aquecimento ou iluminação)","Interruptor do circuito de aquecimento e iluminação. O manual cita um 'interruptor do aquecedor' que deve ficar sempre ligado (seção 7.6), mas não diz se é o S19 ou o S20.","Manual Fig. 16 (S20) e seção 7.6.","",[["ele",24.4,90.2,"S20"]],1],
+ ["s19","Interruptor S19 (aquecimento ou iluminação)","No diagrama está em série com a lâmpada H19. O manual não detalha a função; veja também a nota da seção 7.6 sobre o interruptor do aquecedor.","Manual Fig. 16 (S19) e seção 7.6.","",[["ele",27.4,88.8,"S19"]],1],
+ ["ret","Retificador do motor e disparadores (V1/V2/V3)","Retificador usado no circuito do motor e dos disparadores. O manual só o lista na tabela de peças.","Manual seção 8.10 (item 2).","Peça 3AX15 25-1F (4109764015).",[],1]
+ ];
+ N.forEach(r=>D.comp.push({id:r[0],n:r[1],f:r[2],proj:r[3],tec:r[4]||"",hs:r[5]||[],g:r[6]}));
+ D.comp.find(c=>c.id==="ret").only="ele";D.comp.find(c=>c.id==="hdd").only="mec";
+ N.forEach(r=>{const c=D.comp.find(x=>x.id===r[0]);c.hs=c.hs.map(h=>h.length===4&&typeof h[0]==="string"?h:h)});
+}
+const SINT=[
+["Não fecha, com a mola carregada",["mcb","y9","k1","aux","bfx","bit"],["Alimentação do circuito auxiliar desligada ou MCB desarmado: verificar a alimentação e fusíveis.","Conexão frouxa ou fiação danificada.","Sem comando de fechamento em X3.5/X3.6: verificar continuidade e a lógica.","Sem curto em X3.3 e X3.4 quando o fechamento remoto não é usado.","Solenoide de fechamento Y9 inoperante: testar separado e trocar se necessário.","Contatos 21-22 do interruptor auxiliar S1 abertos com o disjuntor fechado: ajustar a articulação.","Relé anti-bombeamento K1 ou seus contatos inoperantes."]],
+["Mola de fechamento não carrega sozinha",["mcb","mot","s2122","bfx"],["Alimentação do circuito auxiliar desligada ou MCB desarmado.","Conexão frouxa ou fiação danificada.","Sem curto em X3.3 e X3.4 quando o fechamento remoto não é usado.","Motor de carregamento M1 inoperante: verificar e trocar.","Chaves de fim de curso S21 e S22 com falha: verificar a articulação mecânica.","Falha mecânica do mecanismo: contatar assistência autorizada."]],
+["Fecha sozinho ou com interferência",["bfx","y9"],["Comando de fechamento permanece nos bornes X3.3 / X3.4: corrigir a lógica.","Terminal A2 do solenoide Y9 em curto com a terra: verificar fiação ou bobina.","Falha mecânica do mecanismo: contatar assistência autorizada."]],
+["Não abre (não desarma)",["mcb","y1","aux","bdx"],["Alimentação do circuito auxiliar desligada ou MCB desarmado.","Conexão frouxa ou fiação danificada.","Sem comando de desarme em X3.9: verificar continuidade e lógica.","Sem curto em X3.7 e X3.8 quando o desarme remoto não é usado.","Disparador de abertura Y1 inoperante: testar separado e trocar.","Contatos 23-24 do interruptor auxiliar S1 abertos com o disjuntor fechado: ajustar a articulação."]],
+["Abre sozinho ou com interferência",["bdx","y1"],["Comando de desarme permanece em X3.9: corrigir a lógica.","Falha mecânica do mecanismo: contatar assistência autorizada."]]
+];
+function diag(){
+ app.insertAdjacentHTML("beforeend",`<div class="card"><b>Diagnóstico por sintoma</b><p class="note">Escolha o sintoma para destacar na figura os componentes que podem causar o problema (manual, tabela da seção 8.14).</p><div class="row">${SINT.map((s,i)=>`<button data-s="${i}">${s[0]}</button>`).join("")}</div></div>`);
+ app.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{const s=SINT[b.dataset.s];
+  app.querySelectorAll("[data-s]").forEach(x=>x.classList.toggle("on",x===b));
+  app.querySelectorAll(".pt").forEach(p=>p.classList.toggle("hl",s[1].includes(p.dataset.c)));
+  $("#info").innerHTML=`<h2 style="font-size:1.2rem">${s[0]}</h2><p><b>Possíveis causas e verificações:</b></p><ol>${s[2].map(x=>`<li>${x}</li>`).join("")}</ol><p class="note">Os componentes citados estão destacados na figura. Clique em um deles para ver detalhes.</p><div class="warn">Verificações elétricas no comando (tensões, continuidade, lâmpadas e relés) normalmente são feitas com o circuito energizado, seguindo o procedimento e a APR da empresa. Com o comando energizado, mantenha mãos e ferramentas fora do mecanismo: o disjuntor pode ser comandado à distância e as molas armazenam energia (manual, seção 8.13). Para trocar componentes ou mexer no mecanismo, use a sequência da seção 8.3.</div>`})}
+
+/* ===== ZOOM ===== */
+function addZoom(){document.querySelectorAll(".fig").forEach(f=>{if(f.dataset.z)return;f.dataset.z=1;
+ const w=document.createElement("div");w.className="figw";w.style.maxWidth=f.style.getPropertyValue("--mw")||"560px";
+ const bar=document.createElement("div");bar.className="zbar";
+ if(f.querySelector(".pt:not(.hint)")){const p=document.createElement("button");p.className="zb zp";p.textContent=showPts?"👁 Ocultar pontos":"👁 Mostrar pontos";p.onclick=()=>setPts(!showPts);bar.appendChild(p)}
+ const b=document.createElement("button");b.className="zb";b.textContent="🔍 Ampliar";b.setAttribute("aria-label","Ampliar imagem com zoom");b.onclick=()=>lightbox(f);bar.appendChild(b);
+ f.parentNode.insertBefore(w,f);w.appendChild(bar);w.appendChild(f)})}
+function lightbox(f){
+ const img=f.querySelector("img"),lb=document.createElement("div"),opener=document.activeElement;lb.className="lb";lb.setAttribute("role","dialog");lb.setAttribute("aria-modal","true");lb.setAttribute("aria-label","Imagem ampliada");
+ lb.innerHTML='<div class="lbt"><button data-a="in" aria-label="Aumentar">+</button><button data-a="out" aria-label="Diminuir">−</button><button data-a="rs">Ajustar</button><button data-a="pts">'+(showPts?"👁 Ocultar pontos":"👁 Mostrar pontos")+'</button><button data-a="x">Fechar ✕</button><span>Arraste para mover. Roda do mouse ou pinça para zoom. Toque duplo amplia. Toque num ponto para abrir o componente.</span></div><div class="lbv"><div class="lbc"></div></div>';
+ document.body.appendChild(lb);document.body.style.overflow="hidden";
+ const v=lb.querySelector(".lbv"),c=lb.querySelector(".lbc"),cl=f.cloneNode(true);
+ cl.querySelectorAll(".zb").forEach(z=>z.remove());cl.classList.remove("go");cl.style.cssText="width:100%;max-width:none;margin:0";c.appendChild(cl);
+ const R=img.naturalWidth/img.naturalHeight||1;let st={s:1,x:0,y:0},W,H,w;
+ const ap=()=>{c.style.transform=`translate(${st.x}px,${st.y}px) scale(${st.s})`;lb.style.setProperty("--z",st.s)};
+ const fit=()=>{W=v.clientWidth;H=v.clientHeight;w=Math.min(W*.98,H*.98*R);c.style.width=w+"px";st={s:1,x:(W-w)/2,y:(H-w/R)/2};ap()};
+ const zoom=(k,cx,cy)=>{const ns=Math.min(10,Math.max(.5,st.s*k));st.x=cx-(cx-st.x)*ns/st.s;st.y=cy-(cy-st.y)*ns/st.s;st.s=ns;ap()};
+ const rc=()=>v.getBoundingClientRect();
+ const kd=e=>{if(e.key==="Escape")close()};
+ const close=()=>{lb.remove();document.body.style.overflow="";document.removeEventListener("keydown",kd);if(opener&&opener.focus)opener.focus()};
+ document.addEventListener("keydown",kd);fit();lb.querySelector("[data-a=x]").focus();
+ const P=new Map();let moved=0,d0=0;
+ v.onpointerdown=e=>{v.setPointerCapture(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);if(P.size===1)moved=0;d0=0};
+ v.onpointermove=e=>{if(!P.has(e.pointerId))return;const o=P.get(e.pointerId);P.set(e.pointerId,[e.clientX,e.clientY]);
+  if(P.size===1){st.x+=e.clientX-o[0];st.y+=e.clientY-o[1];moved+=Math.abs(e.clientX-o[0])+Math.abs(e.clientY-o[1]);ap()}
+  else if(P.size===2){const[a,b]=[...P.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(d0){const r=rc();zoom(d/d0,(a[0]+b[0])/2-r.left,(a[1]+b[1])/2-r.top)}d0=d;moved+=10}};
+ v.onpointerup=e=>{const single=P.size===1;P.delete(e.pointerId);d0=0;
+  if(single&&moved<6){const p=document.elementFromPoint(e.clientX,e.clientY)?.closest(".pt");
+   if(p){const i=[...cl.querySelectorAll(".pt")].indexOf(p);close();f.querySelectorAll(".pt")[i]?.click()}}};
+ v.onpointercancel=e=>{P.delete(e.pointerId);d0=0};
+ v.onwheel=e=>{e.preventDefault();const r=rc();zoom(e.deltaY<0?1.2:1/1.2,e.clientX-r.left,e.clientY-r.top)};
+ v.ondblclick=e=>{const r=rc();st.s>1.5?fit():zoom(3,e.clientX-r.left,e.clientY-r.top)};
+ lb.querySelector(".lbt").onclick=e=>{const a=e.target.dataset.a;if(!a)return;const r=rc();
+  if(a==="in")zoom(1.5,r.width/2,r.height/2);if(a==="out")zoom(1/1.5,r.width/2,r.height/2);if(a==="rs")fit();if(a==="x")close();if(a==="pts")setPts(!showPts)};
+}
+
+/* ===== OCULTAR PONTOS ===== */
+let showPts=true;try{showPts=localStorage.getItem("pts")!=="0"}catch(e){}
+function setPts(v){showPts=v;try{localStorage.setItem("pts",v?"1":"0")}catch(e){}
+ document.body.classList.toggle("nopts",!v);
+ document.querySelectorAll(".zp,[data-a=pts]").forEach(b=>b.textContent=v?"👁 Ocultar pontos":"👁 Mostrar pontos")}
+document.body.classList.toggle("nopts",!showPts);
+
+/* ===== PLACA E ENSAIO DE FÁBRICA (exemplo real 3AF0152) ===== */
+const PLACA=[["Tipo","3AF0152"],["Meio extintor","Vácuo"],["Ano de fabricação","01/2026"],["Tensão nominal","38 kVef"],["Frequência nominal","60 Hz"],["Corrente nominal","1250 Aef"],["Capacidade de interrupção nominal em curto-circuito","16 kAef"],["Componente alternada da capacidade nominal","16 kAef"],["Porcentagem da componente contínua","32 %"],["Capacidade de estabelecimento nominal em curto-circuito (Ifech)","41,6 kAcr"],["Valor de crista nominal da corrente suportável (Id)","41,6 kAcr"],["Tensão suportável nominal a impulso atmosférico","200 kV"],["Tensão suportável nominal à frequência industrial","70 kVef"],["Fator do primeiro polo","1,5"],["Corrente suportável nominal de curta duração (It/t)","16 kAef / 3 s"],["Tempo total de interrupção","≤ 80 ms"],["Bobina de abertura","125 V CC (+10% / -20%)"],["Bobina de fechamento","125 V CC (+10% / -15%)"],["Motor","125 V CC (+10% / -20%)"],["Resistência de aquecimento","220 V CA (+10% / -20%)"],["Ciclo de operação","O - 0,3 s - CO - 15 s - CO"],["Massa total","790 kg"],["Manual de instrução","NS-A7E-324-02159-001"],["Normas","IEC 62271-100"],["Fabricante","Siemens (importado da Índia por Siemens Infraestrutura e Indústria)"]];
+const ENS_COND=[["MLFB","3AF0152"],["Tensão nominal","38 kV"],["Corrente nominal","1250 A"],["Frequência","60 Hz"],["Corrente de curto-circuito","16 kA"],["Tensão aplicada, circuito principal","70 kV CA / 1 min"],["Tensão aplicada, circuito auxiliar","1 kV CA / 1 s"],["Sequência nominal","O - 0,3 s - CO - 15 s - CO"],["Tensão de abertura, fechamento e motor","125 V CC"],["Temperatura / umidade","24 °C / 65 %"],["Data do ensaio","15/01/2026"],["Norma","IEC 62271-100"]];
+/* [grupo, medição, unidade, A, B, C, limite do manual] */
+const ENS=[
+["Fechamento (Y9)","Tempo de fechamento, tensão máxima","ms",61.5,61.5,61.5,75],
+["Fechamento (Y9)","Tempo de fechamento, tensão nominal","ms",65.5,65.5,65.5,75],
+["Fechamento (Y9)","Tempo de fechamento, tensão mínima","ms",73,72.5,72.5,75],
+["Fechamento (Y9)","Corrente da bobina, tensão nominal","mA*",0.9],
+["Abertura (Y1)","Tempo de abertura, tensão máxima","ms",46,46,46,65],
+["Abertura (Y1)","Tempo de abertura, tensão nominal","ms",52,52,52,65],
+["Abertura (Y1)","Tempo de abertura, tensão mínima","ms",57.5,57.5,58,65],
+["Abertura (Y1)","Corrente da bobina, tensão nominal","mA*",0.93],
+["Motor (M1)","Corrente, tensão máxima","A",4.77],
+["Motor (M1)","Tempo de carga da mola, tensão máxima","s",7.17,null,null,15],
+["Motor (M1)","Corrente média, tensão nominal","A",4.73],
+["Motor (M1)","Tempo de carga da mola, tensão nominal","s",7.65,null,null,15],
+["Motor (M1)","Corrente média, tensão mínima","A",5],
+["Motor (M1)","Tempo de carga da mola, tensão mínima","s",9.54,null,null,15],
+["Ciclos de operação","Tempo CO, tensão nominal","ms",58.5,58.5,59,90],
+["Ciclos de operação","Tempo (O)CO, tensão nominal","ms",58.5,58.5,59],
+["Ciclos de operação","Tempo O(CO), tensão nominal","ms",355.5,356,355.5],
+["Contatos","Resistência de contato a 100 A","µΩ",27,26,28],
+["2º disparador (Y3)","Tempo de 2ª abertura, tensão nominal","ms",49,48.5,49,65],
+["2º disparador (Y3)","Corrente da 2ª abertura, tensão nominal","mA*",0.9]
+];
+DISJ["3AF01"].dv.push("Sua unidade (placa 3AF0152): massa de 790 kg, contra 650 kg no manual e 570 kg no catálogo.","Sua unidade: aquecimento de 220 V CA na placa; o manual cita 240 V CA.","Sua unidade: tolerância da bobina de abertura de +10% / -20% e do motor de +10% / -20%; o manual indica -30% / +10% (CC) para o disparador Y1 e -15% / +10% para o motor.","Código do tipo: no catálogo, 3AF0152 corresponde a 31,5 kA e 2000 A, mas a placa da sua unidade mostra 16 kA e 1250 A. Ela tem manual próprio (NS-A7E-324-02159-001), que pode diferir do manual usado neste site.");
+const fmt=n=>String(n).replace(".",",");
+const tb=r=>`<div class="tbw"><table class="tb">${r.map(x=>`<tr>${x.map((c,i)=>i?`<td>${c}</td>`:`<th scope="row">${c}</th>`).join("")}</tr>`).join("")}</table></div>`;
+function showExtra(k){
+ const x=$("#extra");
+ if(x.dataset.k===k){x.innerHTML="";x.dataset.k="";return}
+ x.dataset.k=k;
+ if(k==="pv"||k==="rf"||k==="pc"){extra2(k,x);return}
+ if(k==="pl"){
+  x.innerHTML=`<div class="card"><h2>Placa de identificação (exemplo real)</h2><div class="grid"><div class="fig" style="--mw:420px"><img src="placa.jpg" alt="Placa de identificação de um 3AF0152"></div><div>${tb(PLACA)}</div></div>
+  <p class="note">Dados de empresa, pedido, patrimônio, tombamento, código SAP e número de série foram ocultados.</p>
+  <div class="card" style="margin-top:12px"><b>Faixa de operação calculada a partir da placa (125 V CC)</b>${tb([["Bobina de abertura","100 a 137,5 V"],["Bobina de fechamento","106,25 a 137,5 V"],["Motor","100 a 137,5 V"]])}<p class="note">Cálculo: 125 V com as tolerâncias da placa. Não vem escrito na placa.</p></div>
+  <details><summary><b>Campos de uma placa segundo o manual 3AF 01</b></summary><ul>${DISJ["3AF01"].placa.map(p=>`<li>${p}</li>`).join("")}</ul><p class="note">${DISJ["3AF01"].placaNota}</p></details></div>`;
+ }else{
+  let g="",rows="";
+  ENS.forEach(r=>{
+   if(r[0]!==g){g=r[0];rows+=`<tr class="gr"><th colspan="8">${g}</th></tr>`}
+   const v=r.slice(3,6).filter(n=>n!=null),mx=Math.max(...v),isT=r[2]==="ms"&&v.length>1,dl=isT?Math.round((mx-Math.min(...v))*10)/10:null;
+   const lim=r[6],st=lim==null?"":(mx<=lim?`<span class="ok">✓ dentro</span>`:`<span class="bad">⚠ acima</span>`);
+   rows+=`<tr><th scope="row">${r[1]}</th><td>${r[2]}</td><td>${fmt(r[3])}</td><td>${r[4]==null?"":fmt(r[4])}</td><td>${r[5]==null?"":fmt(r[5])}</td><td>${dl==null?"":fmt(dl)+(/Y9|Y1|Y3/.test(r[0])?(dl<=2?" ✓":" ⚠"):"")}</td><td>${lim==null?"":"≤ "+lim+" "+r[2]}</td><td>${st}</td></tr>`}
+  );
+  x.innerHTML=`<div class="card"><h2>Ensaio de fábrica (referência para a preventiva)</h2><div class="grid"><div class="fig" style="--mw:520px"><img src="ensaio.jpg" alt="Relatório de ensaio de fábrica de um 3AF0152"></div><div>${tb(ENS_COND)}</div></div>
+  <p class="note">Dados de cliente, ordem, patrimônio, número de série e técnico foram ocultados.</p>
+  <div class="tbw"><table class="tb"><tr><th>Medição</th><th>Unid.</th><th>Polo A</th><th>Polo B</th><th>Polo C</th><th>Δ polos</th><th>Limite do manual</th><th>Situação</th></tr>${rows}</table></div>
+  <div class="warn" style="border-color:var(--brass);background:#fbf3de"><b>Como ler</b><ul>
+  <li><b>Limites do manual:</b> vêm da Tabela 2 do manual 3AF 01 (fechamento ≤ 75 ms, abertura Y1 e Y3 ≤ 65 ms, abertura-fechamento ≤ 90 ms, carga da mola ≤ 15 s). A correspondência do "Tempo CO" com o "tempo de abertura-fechamento" é provável, não confirmada. Δ polos usa o limite de 2 ms de erro de sincronismo.</li>
+  <li><b>Resistência de contato e correntes:</b> o manual e o catálogo não trazem limite. Use o valor de fábrica como referência e compare a evolução nas preventivas.</li>
+  <li><b>VMax / VNom / VMin:</b> o relatório não informa as tensões. Pela placa, provavelmente são 137,5 V, 125 V e o limite inferior (100 V na abertura e no motor, 106,25 V no fechamento).</li>
+  <li><b>*mA:</b> unidade como impressa no relatório. Para bobinas de cerca de 200 W em 125 V, o valor esperado seria da ordem de ampères. Confira no relatório original.</li>
+  <li><b>Y7 (subtensão):</b> sem valores no relatório.</li>
+  <li><b>Limites do seu equipamento:</b> esta unidade tem manual próprio (NS-A7E-324-02159-001). Confirme nele os limites antes de usar como critério de aceitação.</li></ul></div></div>`;
+ }
+ addZoom();x.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+/* ===== NOVOS COMPONENTES (vista externa e erosão) ===== */
+{const D=DISJ["3AF01"],X=(id,f,x,y,t)=>D.comp.find(c=>c.id===id).hs.push([f,x,y,t]);
+ X("cjp","ext",22.2,9.2,"A");X("bas","ext",50.5,34.6,"D");X("aco","ext",40.4,79.2,"H");X("cx","ext",66.7,53.3,"G");X("viz","ext",48.5,54.2,"J");X("ts","ext",23.2,2.1,"E");
+ const N3=[
+ ["sup","Suporte do isolador","Conjunto do isolador inferior do polo. Sustenta o interruptor e leva a haste de comutação até o mecanismo.","Manual Fig. 1 (item C), pág. 1. Catálogo pág. 6.","",[["ext",22.2,25,"C"]],1],
+ ["ate","Terminais de aterramento","Pontos de ligação do disjuntor ao aterramento de proteção de alta tensão.","Manual Fig. 1 (item L) e seção 6.5 (i).","Usar cobre liso, cabo de cobre ou fita de aço galvanizado a quente.",[["ext",36.4,57.8,"L"]]],
+ ["cad","Fecho para cadeado","Fecho da porta da carcaça do mecanismo, que aceita cadeado.","Manual Fig. 1 (item M), pág. 1.","",[["ext",80.6,49.7,"M"]]],
+ ["prc","Placa para prensa-cabos","Placa de vedação onde se fazem os furos para passar os cabos de controle.","Manual Fig. 1 (item K) e seção 6.5 (ii).","Fica na parte de baixo da carcaça, sem marcação na foto.",[]],
+ ["ero","Indicador de erosão do contato (28)","Indicador em cada suporte de polo que mostra o desgaste do contato do interruptor a vácuo em relação à escala.","Manual Fig. 12A (item 28), pág. 13. Seção 8.5.","Erosão máxima permitida: 3 mm. O disjuntor só deve operar com o indicador dentro da escala. Verificar com o disjuntor fechado (a cada 10 anos ou 10.000 operações).",[["ero",36.2,93.6,"28"]]],
+ ["esc","Escala de erosão (28.1)","Escala de 3 mm usada para ler a posição do indicador (28).","Manual Fig. 12A (item 28.1), pág. 13. Seção 8.5.","Como fornecido e com o disjuntor fechado, o indicador aponta o menor nível da escala.",[["ero",12.6,45.3,"28.1"]]],
+ ["p12","Pino (Fig. 12A)","Pino do conjunto da estrutura de base. O manual só o cita na legenda.","Manual Fig. 12A (item 3), pág. 13.","",[["ero",44.7,93.6,"3"]],1],
+ ["e12","Eixo (Fig. 12A)","Eixo do conjunto da estrutura de base. O manual só o cita na legenda.","Manual Fig. 12A (item 4), pág. 13.","",[["ero",52.9,93.6,"4"]],1]
+ ];
+ N3.forEach(r=>D.comp.push({id:r[0],n:r[1],f:r[2],proj:r[3],tec:r[4]||"",hs:r[5]||[],g:r[6]}));
+ D.comp.find(c=>c.id==="prc").only="ext";
+}
+
+/* ===== PREVENTIVA, REFERÊNCIAS E PEÇAS ===== */
+const PV=[
+["Verificações e medições rápidas no comando (normalmente com o comando energizado, conforme o procedimento e a APR da empresa)",["Ler o contador de operações e conferir os indicadores de posição (O/I) e de mola carregada/descarregada.","Conferir as lâmpadas de falha de bobina de abertura 1 e 2 e o LED do relé de supervisão.","Medir as tensões de alimentação CC e CA nos minidisjuntores e comparar com as faixas da placa.","Verificar o aquecimento (resistência e termostato) e a ausência de umidade, sujeira ou insetos.","Mãos e ferramentas fora do mecanismo com o comando energizado: o disjuntor pode ser comandado à distância e as molas armazenam energia (seção 8.13)."]],
+["Manutenção mecânica (limpeza, lubrificação, ajustes): sequência do manual (seções 8.1 e 8.3)",["Desligar o disjuntor.","Isolar o disjuntor.","Aterrar o disjuntor.","Desconectar a alimentação auxiliar.","Descarregar as molas: fechar e abrir manualmente e confirmar a indicação 'mola de fechamento descarregada'.","Não tocar nos terminais de controle com a alimentação conectada."]],
+["Anual, conforme as condições do local (seção 8.2)",["Inspeção visual: sujidade (poeira, névoa salina, fungos).","Limpeza dos isoladores e dos componentes do mecanismo (hastes, articulações móveis), com pano úmido e detergente neutro, disjuntor aberto e molas descarregadas.","Verificar o funcionamento do aquecedor (deve ficar sempre ligado).","Verificar o vácuo (seção 8.6): ao remover o pino, a haste de comutação deve ser puxada para cima pelo vácuo.","Teste dielétrico com megômetro de 5 kV (seção 8.8, abaixo)."]],
+["Com frequência, sem prazo definido no manual (seções 8.2 e 8.13)",["Verificar as tensões de alimentação (CA) e da bateria (CC) dos circuitos de controle, para garantir potência adequada para operar o disjuntor."]],
+["Resistência de isolamento (seção 8.8): todas as leituras acima de 100 MΩ",["Disjuntor aberto, entre terminais de fase (2 leituras).","Disjuntor aberto, entre terminais superiores e a terra (3 leituras).","Disjuntor fechado, entre terminais e a terra (3 leituras)."]],
+["A cada 10 anos ou 10.000 operações (seção 8.2)",["Verificar a erosão do contato (seção 8.5): máximo de 3 mm; o indicador deve estar dentro da escala."]],
+["Lubrificação: a cada 4.000 operações, ou antes em local com muita poeira (seção 8.4)",["Graxa Isoflex Topas L 32 nos pontos △ (a, c, d, e, g, h, k, l, m).","Óleo Shell Tellus 32 nos pontos □ (b, f, j, p).","Mover levemente as juntas nos dois sentidos para o lubrificante entrar e operar o disjuntor algumas vezes."]],
+["Sugestão (não consta no manual): acompanhar tendências",["Medir os tempos de fechamento e abertura e comparar com o ensaio de fábrica e com os limites do manual.","Medir a resistência de contato e comparar com o valor de fábrica.","Fotografar o contador de operações e o indicador de erosão para registrar a evolução."]],
+["Ao terminar (seções 7.6 e 8.13)",["Não deixar ferramentas ou equipamentos dentro da carcaça.","Lâmpada apagada, portas e tampas bem fechadas.","Manivela de carga da mola e alavanca manual guardadas na carcaça.","Aquecedor ligado.","Manter o livro de registro do disjuntor (o manual pede um livro para cada disjuntor)."]]
+];
+const TQ=[["Aço com aço","32","65","115","—"],["Aço com isolador","16","32","77","170"],["Junta de barramento","20","40","70","—"],["Barramento com aço","20","40","70","—"]];
+const TMP=[["Abertura, 1º e 2º disparador em derivação (Y1, Y3)","≤ 65 ms"],["Abertura, disparador em derivação comp. (Y2)","≤ 50 ms"],["Tempo de arco","< 15 ms"],["Desarme, Y1 e Y3","≤ 80 ms"],["Desarme, Y2","≤ 65 ms"],["Abertura-fechamento (Y1, Y2, Y3)","≤ 90 ms"],["Tempo de inatividade","300 ms"],["Fechamento com mecanismo de armazenamento de energia","≤ 75 ms"],["Erro de sincronização entre polos","≤ 2 ms"],["Carga da mola (M1)","≤ 15 s"],["Pulso mínimo: Y1 e Y9 (3AY1510)","40 ms"],["Pulso mínimo: Y2, Y4, Y6 (3AX 110_)","20 ms"]];
+const PCS=[
+["1","Disparador de fechamento ou abertura (Y1, Y3, Y9), cerca de 200 W/VA","24 V CC","3AY1510-3BY","4398095020"],["","","30 V CC","3AY1510-3MY","4398095021"],["","","110 V CC","3AY1510-3EY","4398095024"],["","","220 V CC","3AY1510-3FY","4398095026"],
+["2","Retificador para motor e disparadores (V1/V2/V3)","","3AX15 25-1F","4109764015"],
+["3","Interruptor auxiliar (S1)","5NA + 5NF","3SV92 21","4109764021"],["","","11NA + 11NF","3SV92 22","4109764022"],
+["4","Minidisjuntor 2 polos, 240 V CA","6 A","5SQ22107YA06","—"],["","","4 A","5SQ22107YA04","—"],["","","2 A","5SQ22107YA02","—"],
+["5","Aquecedor (E11), 240 V CA, 100 W","","—","4396201101"],
+["6","Motor (M1), 770 W","110 V CC","3AY15 11-1EY","4109764016"],["","","220 V CC","3AY15 11-1FY","4109764017"],
+["7","Alavanca manual / de emergência (opcional)","","—","4110490001"],
+["8","Relé K1 2NA + 2NF (tensão igual à do disparador de fechamento)","24 V CC","3TH30220BB4","—"],["","","30 V CC","3TH30220BC4","—"],["","","110 V CC","3TH30220BF4","—"],["","","220 V CC","3TH30220BM4","—"],
+["9","Interruptor de posição (S21, S22, S3, S4)","","3SE 4206","4107766996"],
+["10","Interruptor a vácuo (D21), tipo VS36025","","3AY1716-1A","4398107002"],
+["11","2º disparador em derivação (Y2)","24 a 32 V CC","3AX1101-2B","4110660052"],["","","48 a 60 V CC","3AX1101-2C","4110660063"],["","","110 a 127 V CC","3AX1101-2E","4110660054"],["","","220 V CC","3AX1101-2F","4110660055"],["","","110 V CA, 50 Hz","3AX1101-2G","4110660058"],["","","230 V CA, 50 Hz","3AX1101-2J","4110660059"],
+["12","Disparador de corrente do transformador (Y4), 0 a 0,5 A","","3AX1102-2A","4110660062"],
+["13","Chave seletora Local/Remota (S13)","","—","4113488907"],
+["14","Lubrificantes e graxa","","3AX1133-3A","4110522005"],
+["15","Alavanca de carregamento da mola (manivela manual)","","3AX1530-3B","4112871002"],
+["16","Kit de arruelas de travamento","","3AY1550-0A","4109764024"],
+["17","Interruptor de controle do disjuntor (S14)","","—","4394570001"],
+["18","Conjunto de polo vedado","1600 A, fuga 900 mm","—","4395205001"],["","","1600 A, fuga 1300 mm","—","4395205002"],["","","2000 A, fuga 900 mm","—","4395205003"],["","","2000 A, fuga 1300 mm","—","4395205004"]
+];
+function extra2(k,x){
+ if(k==="pv"){
+  x.innerHTML=`<div class="card"><h2>Checklist de preventiva</h2><p class="note">Baseado nas seções 8.1 a 8.8 e 8.13 do manual 3AF 01. Os intervalos são diretrizes: o próprio manual manda ajustar ao número de operações, à frequência de manobras, à função e ao ambiente.</p>
+  <div class="fld"><label>Equipamento / TAG<input id="f1"></label><label>Data<input id="f2" type="date"></label><label>Responsável<input id="f3"></label></div>
+  ${PV.map(g=>`<h3 style="margin:1em 0 .2em;font-size:1rem">${g[0]}</h3>${g[1].map(t=>`<label class="chk"><input type="checkbox"><span>${t}</span></label>`).join("")}`).join("")}
+  <div class="row noprint"><button id="prt">Imprimir checklist</button></div></div>`;
+  $("#prt").onclick=()=>{document.body.classList.add("pr");window.print();setTimeout(()=>document.body.classList.remove("pr"),500)};
+ }else if(k==="rf"){
+  x.innerHTML=`<div class="card"><h2>Referências rápidas (manual 3AF 01)</h2>
+  <h3 style="font-size:1rem">Torques de aperto (seção 6.4), em N·m ± 10%</h3><div class="tbw"><table class="tb"><tr><th>Tipo da junta</th><th>M8</th><th>M10</th><th>M12</th><th>M20</th></tr>${TQ.map(r=>`<tr><th scope="row">${r[0]}</th>${r.slice(1).map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div><p class="note">Para testar a junta, use 70% do valor como torque de verificação.</p>
+  <h3 style="font-size:1rem">Tempos de operação e pulsos (Tabela 2)</h3>${tb(TMP)}
+  <h3 style="font-size:1rem">Tensões de alimentação (seções 4.2 e 4.3)</h3>${tb([["Motor e solenoide de fechamento (Y9)","-15% a +10%"],["Disparador Y1 (CC)","-30% a +10%"],["Disparador Y1 (CA)","-15% a +10%"],["Potência do motor","cerca de 770 W (CC) ou 900 VA (CA)"],["Potência de Y1, Y3 e Y9","cerca de 200 W/VA"]])}
+  <h3 style="font-size:1rem">Correção de altitude (seção 2.3.2)</h3><p>Acima de 1000 m: U ≥ U0 × Ka, com Ka = e^((H − 1000) / 8150).</p>
+  <div class="fld"><label>Altitude H (m)<input id="alt" type="number" min="0" step="50" value="1400"></label><label>Tensão suportável necessária U0 (kV)<input id="u0" type="number" min="0" step="1" value="185"></label></div><p id="altr" aria-live="polite"></p>
+  <p class="note">O manual dá o exemplo de 185 kV a 1400 m, que exige 195 kV sob atmosfera padrão. Escolha sempre o nível de isolamento padrão imediatamente acima do calculado.</p>
+  <p class="note">A corrente de carga máxima em função da temperatura ambiente está na Fig. 4 do manual (as correntes nominais valem para 40 °C).</p></div>`;
+  const calc=()=>{const H=+$("#alt").value,U=+$("#u0").value,ka=H>1000?Math.exp((H-1000)/8150):1;$("#altr").innerHTML=`Ka = <b>${ka.toFixed(3).replace(".",",")}</b>. Nível de isolamento mínimo sob atmosfera padrão: <b>${(U*ka).toFixed(1).replace(".",",")} kV</b>.`};
+  $("#alt").oninput=calc;$("#u0").oninput=calc;calc();
+ }else{
+  x.innerHTML=`<div class="card"><h2>Peças de reposição padrão (seção 8.10)</h2><div class="tbw"><table class="tb"><tr><th>Item</th><th>Descrição</th><th>Variante</th><th>MLFB</th><th>Nº do item</th></tr>${PCS.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>
+  <div class="warn" style="border-color:var(--brass);background:#fbf3de">A tabela do manual lista tensões de 24, 30, 110 e 220 V CC para bobinas e motor. Uma unidade com <b>125 V CC</b> (como a da placa de exemplo) não aparece aqui; o catálogo cita 125 V CC como tensão especial. Confirme o código correto com a Siemens, informando tipo, código do modelo, ano e número de série.</div></div>`;
+ }
+ addZoom();x.scrollIntoView({behavior:"smooth",block:"start"});
+}
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+/* ===== EQUIPAMENTO REAL (fotos de 14/10/2026) ===== */
+const GRP={real:"Equipamento real",man:"Manuais e catálogo",ele:"Elétrico"};
+const NOTA={real:"Fotos do equipamento real (3AF0152), tratadas. Os números são os da Fig. 11 do manual quando o item existe nela; letras e TAGs foram lidas nas etiquetas das fotos. Dados de identificação foram ocultados.",man:"Imagens do manual 3AF 01 e do catálogo Siemens. Números e letras minúsculas são os do manual; letras maiúsculas (L, C, D, E, V, M) são itens que identifiquei na foto.",ele:"Diagrama do manual (Fig. 16): é um exemplo genérico. O projeto elétrico real da sua unidade é diferente (veja as fotos do comando na aba Equipamento real)."};
+{const D=DISJ["3AF01"],G={rmec:"real",rfre:"real",resq:"real",rdir:"real",rcmd:"real",rpan:"real",ele:"ele"};
+ Object.keys(D.figs).forEach(k=>D.figs[k].g=G[k]||"man");
+ const C=id=>D.comp.find(c=>c.id===id),X=(id,f,x,y,t)=>C(id).hs.push([f,x,y,t]);
+ const MQ="Corrente nominal não legível na foto; confirme no projeto.";
+ const N4=[
+ ["red","Redutor de carga da mola (caixa de alumínio)","Caixa de alumínio fundido logo acima dos interruptores de fim de curso. Provavelmente recebe o movimento do motor e carrega a mola de fechamento. Tem uma marcação de fábrica em azul (FA/20711/12/24).","Não é numerada no manual; aparece como o conjunto central superior da Fig. 11.","",[],1],
+ ["bob","Bobinas de comando B1, B2 e B3 (3 solenoides 3AY1510)","Três solenoides iguais, lado a lado: um de fechamento (Y9) e dois de abertura (Y1 e Y3). A placa do mecanismo cita as bobinas de abertura Y1 e Y3 e a de fechamento.","Manual Fig. 11 (itens 4, 5 e 20) e seções 4.3.1 a 4.3.3. Placa do mecanismo (foto).","Placa: 190 W; 65 ms na abertura e 75 ms no fechamento. Nas fotos não há etiqueta nos cabos que diga qual bobina é qual. Provável: a da esquerda (B1), com a ligação por baixo, é a de fechamento; B2 e B3 são as de abertura. Para confirmar, leia o TAG no projeto, fotografe as marcações dos fios ou observe qual êmbolo atua ao comandar fechar e abrir, com mãos e ferramentas fora do mecanismo.",[],1],
+ ["y3","2º disparador em derivação (Y3)","Segunda bobina de abertura, para redundância: se a primeira falhar, a outra abre o disjuntor. A sua unidade tem Y1 e Y3, e o painel tem duas lâmpadas de falha de bobina de abertura.","Manual seção 4.3.3 (opcional). Placa do mecanismo e ensaio de fábrica (2ª abertura, Y3).","Tipo 3AY1510. Placa: 190 W, 65 ms. No ensaio de fábrica, tempo de 2ª abertura de 49, 48,5 e 49 ms (tensão nominal).",[]],
+ ["r90","Resistência de aquecimento (-R90)","Resistor cerâmico verde com tampa vermelha, sob o mecanismo. Aquece o interior da carcaça para evitar condensação.","Etiqueta -R90 nas fotos. Manual seção 7.6 (aquecedor E11).","Placa do equipamento: 220 V CA (+10% / -20%). O manual cita 100 W e 240 V CA (peça 4396201101).",[]],
+ ["th90","Termostato do aquecimento (-B90)","Termostato de painel com botão vermelho, ao lado do relé de supervisão. Provavelmente liga e desliga o aquecimento conforme a temperatura.","Etiqueta -B90 e marca Finder nas fotos.","Modelo e ajuste: confirmar no projeto.",[],1],
+ ["zl","Relé de supervisão (Zilocchi ZLKS-02)","Relé com três canais (S1, S2 e S3), saída de subtensão (<U) e LEDs. Provavelmente supervisiona os circuitos das bobinas e comanda as lâmpadas de falha de bobina de abertura 1 e 2.","Marca e modelo lidos no próprio relé.","60 a 270 V CA / 60 a 380 V CC; 16 bornes numerados; LED ON aceso nas fotos.",[],1],
+ ["s90","Chave de porta (-S90) e lâmpada","Chave com êmbolo ao lado do soquete da lâmpada. Provavelmente acende a lâmpada quando a porta é aberta. A lâmpada é de LED.","Etiqueta -S90; contatos 13 e 14 ligados a X0-53 e X0-54 (leitura das etiquetas).","",[],1],
+ ["han","Conector multipolar do mecanismo (X0)","Conector industrial multipolar de carcaça metálica, tipo Han, por onde o chicote do mecanismo se liga ao comando.","Etiqueta X0 nas fotos.","",[],1],
+ ["bor","Régua de bornes do comando (30 bornes)","Régua de bornes de mola sobre trilho Weidmüller, numerada de 1 a 30, na parte de baixo da área de comando.","Fotos do comando.","",[],1],
+ ["krc","Relés auxiliares KC1 a KC4","Quatro relés auxiliares Siemens SIRIUS 3RH2122-1BG40 (2NA + 2NF, bobina de 125 V CC), cada um com módulo supressor 3RT2916-1BC00. A função de cada um depende do projeto.","TAGs lidos nas etiquetas.","Contatos 13/14 e 43/44 (NA), 21/22 e 31/32 (NF). Bobina de 125 V CC.",[],1],
+ ["kkm","Relé KM","Relé auxiliar Siemens SIRIUS 3RH2122-1BG40 (125 V CC). O TAG sugere relé do motor (M1).","TAG lido na etiqueta.","Bobina de 125 V CC.",[],1],
+ ["ksa","Relé KSA (bobina de 220 V CA)","Relé auxiliar Siemens SIRIUS 3RH2122-1AN20, com bobina de 220 V CA 50/60 Hz. É o único da fileira em CA. Função a confirmar no projeto.","TAG lido na etiqueta.","Bobina de 220 V CA.",[],1],
+ ["kby","Relés KBY1, KBY3 e KBY9","Relés auxiliares SIRIUS 3RH2122-1BG40 (125 V CC). Pelos TAGs, estão associados às bobinas Y1, Y3 e Y9. Função exata (bloqueio, anti-bombeamento, etc.) a confirmar no projeto.","TAGs lidos nas etiquetas.","Bobina de 125 V CC.",[],1],
+ ["q90","Minidisjuntor FVCA (-Q90)","Proteção do circuito de alimentação em corrente alternada (rótulo FVCA). Provavelmente aquecimento, lâmpada e tomada de 220 V.","Rótulo e TAG nas fotos.",MQ,[],1],
+ ["q10","Minidisjuntor MOTOR (-Q10)","Proteção do circuito do motor de carga da mola (rótulo MOTOR).","Rótulo e TAG nas fotos.",MQ,[],1],
+ ["q11","Minidisjuntor FCF (-Q11)","Proteção do circuito de fechamento (rótulo FCF).","Rótulo e TAG nas fotos.",MQ,[],1],
+ ["q12","Minidisjuntor FCA1 (-Q12)","Proteção do circuito da abertura 1 (rótulo FCA1).","Rótulo e TAG nas fotos.",MQ,[],1],
+ ["q13","Minidisjuntor FCA2 (-Q13)","Proteção do circuito da abertura 2 (rótulo FCA2).","Rótulo e TAG nas fotos.",MQ,[],1],
+ ["q95","Minidisjuntor FVCC (-Q95)","Proteção da alimentação em corrente contínua (rótulo FVCC).","Rótulo e TAG nas fotos.",MQ,[],1],
+ ["x91","Tomada 220 V (-X91)","Tomada de serviço no painel, para ferramentas e equipamentos de teste.","Rótulo TOMADA 220V e TAG X91.","",[]],
+ ["sin","Lâmpadas de falha de bobina de abertura 1 e 2","Duas lâmpadas âmbar no painel que indicam falha no circuito da bobina de abertura 1 e da bobina de abertura 2.","Rótulos no painel.","",[]],
+ ["bpx","Borneiras de interligação (XCC, XCA, XC2, XS2 e XS)","Réguas de bornes atrás da porta articulada do painel, onde chegam os cabos externos. As etiquetas dos fios trazem os nomes XCC, XCA, XC2, XS2 e XS. A função de cada régua depende do projeto.","Fotos da porta do painel.","",[],1],
+ ["pe","Aterramento da porta e do mecanismo (PE)","Tranças de cobre e fio verde-amarelo que ligam a porta, o painel e a estrutura do mecanismo ao aterramento da carcaça.","Manual Fig. 1 (item L).","",[]],
+ ["plm","Placa do mecanismo de operação por mola","Placa do mecanismo, com tipo (3AF01-52), tensões e potências de comando e do motor.","Fotos da frente do mecanismo.","Lido na foto (letras pequenas, confirme): comando 125 V CC (+10% / -15%); bobinas de abertura Y1 e Y3, 190 W e 65 ms; bobina de fechamento, 190 W e 75 ms; motor 125 V CC (+10% / -20%), corrente de partida e de regime 14 / 2,8 A, 28000 rpm. O número de série foi ocultado.",[]],
+ ["eti","Etiqueta de tempo de abertura","Etiqueta na tampa do mecanismo: tempo de abertura de Y1 ≤ 65 ms e de Y3 ≤ 65 ms.","Foto da frente do mecanismo.","Os tempos medidos no ensaio de fábrica estão abaixo desses limites.",[]]
+ ];
+ N4.forEach(r=>D.comp.push({id:r[0],n:r[1],f:r[2],proj:r[3],tec:r[4]||"",hs:r[5]||[],g:r[6]}));
+ C("y3").only="rmec";
+ C("mot").tec+=" Na sua unidade, o motor tem etiqueta de 110 V e é alimentado em 125 V CC (+10% / -20%) segundo a placa; escovas e coletor aparecem nas fotos.";
+ C("cnt").tec+=" Leitura nas fotos de 14/10/2026: 00065 operações.";
+ C("y9").tec+=" Na sua unidade, veja a aba Equipamento real (bobinas B1 a B3): a posição de cada bobina ainda precisa de confirmação.";
+ C("y1").tec+=" Na sua unidade, veja a aba Equipamento real (bobinas B1 a B3): a posição de cada bobina ainda precisa de confirmação.";
+ X("lmp","rfre",20.7,10.8,"H");X("alm","rfre",24.4,66.8,"15");X("bt","rfre",44.0,66.8,"3");X("bt","rfre",44.0,76.7,"6");X("cnt","rfre",8.6,77.0,"8");X("cnt","rfre",8.6,83.0,"9");X("cnt","rfre",8.4,87.3,"16");X("plm","rfre",33.2,76.7,"P");X("eti","rfre",23.1,59.2,"T");X("chl","rfre",74.2,52.1,"S13");X("chd","rfre",84.1,52.1,"S14");X("x91","rfre",74.9,64.4,"X91");X("sin","rfre",76.4,83.9,"L1");X("sin","rfre",76.4,87.4,"L2");X("zl","rfre",49.6,29.9,"ZLKS");X("han","rfre",51.8,53.7,"X0");X("bor","rfre",38.0,42.6,"X");X("red","rmec",34.9,20.4,"R");X("mf","rmec",27.4,29.3,"12");X("ma","rmec",41.7,49.8,"13");X("mot","rmec",32.8,52.0,"2");X("cnt","rmec",26.4,55.1,"8");X("cnt","rmec",25.9,65.3,"9");X("cnt","rmec",25.4,78.2,"16");X("eix","rmec",45.2,68.9,"17");X("abs","rmec",37.8,76.0,"11");X("bob","rmec",47.0,40.4,"B1");X("bob","rmec",50.9,42.2,"B2");X("bob","rmec",55.1,42.7,"B3");X("bt","rmec",50.5,52.4,"6");X("bt","rmec",50.5,26.7,"3");X("aux","rmec",58.6,26.2,"14");X("man","rmec",5.8,35.6,"M");X("viz","rmec",9.5,67.6,"V");X("r90","rmec",26.4,97.3,"R90");X("x91","rmec",71.4,19.1,"X91");X("sin","rmec",71.0,69.8,"L1");X("sin","rmec",70.8,78.0,"L2");X("mf","resq",25.9,37.0,"12");X("red","resq",57.5,18.0,"R");X("s3","resq",39.4,35.2,"S3");X("s2122","resq",43.4,39.9,"S21");X("s2122","resq",47.5,35.2,"S22");X("s4","resq",51.5,39.9,"S4");X("mot","resq",62.5,45.3,"2");X("cnt","resq",20.9,52.9,"8");X("cnt","resq",17.6,63.0,"9");X("cnt","resq",18.4,75.4,"16");X("ma","resq",77.4,48.1,"13");X("eix","resq",50.0,66.1,"17");X("abs","resq",63.5,72.2,"11");X("r90","resq",19.5,93.7,"R90");X("han","rdir",60.4,7.8,"X0");X("bob","rdir",32.4,48.6,"B1");X("bob","rdir",47.0,51.2,"B2");X("bob","rdir",62.6,51.4,"B3");X("aux","rdir",71.6,39.2,"14");X("bt","rdir",44.0,40.1,"3");X("bt","rdir",44.0,60.6,"6");X("ma","rdir",18.6,56.7,"13");X("eix","rdir",38.8,72.6,"17");X("pe","rdir",92.8,93.9,"PE");X("krc","rcmd",21.5,22.3,"KC1");X("krc","rcmd",26.7,22.3,"KC2");X("krc","rcmd",32.0,22.6,"KC3");X("krc","rcmd",37.5,22.0,"KC4");X("kkm","rcmd",42.9,21.7,"KM");X("ksa","rcmd",48.3,21.6,"KSA");X("kby","rcmd",53.8,21.3,"KBY1");X("kby","rcmd",59.1,21.0,"KBY3");X("kby","rcmd",64.6,20.5,"KBY9");X("q90","rcmd",36.1,67.3,"Q90");X("q10","rcmd",40.5,67.3,"Q10");X("q11","rcmd",45.0,67.0,"Q11");X("q12","rcmd",49.9,66.9,"Q12");X("q13","rcmd",54.5,66.4,"Q13");X("q95","rcmd",58.8,66.9,"Q95");X("zl","rcmd",64.8,65.6,"ZLKS");X("th90","rcmd",69.5,66.9,"B90");X("s90","rcmd",17.1,5.2,"S90");X("chd","rpan",70.3,28.3,"S14");X("chl","rpan",86.3,26.6,"S13");X("x91","rpan",93.6,46.8,"X91");X("sin","rpan",86.7,77.4,"L1");X("sin","rpan",88.9,83.5,"L2");X("bpx","rpan",42.3,37.3,"XCC");X("bpx","rpan",42.3,44.6,"XCA");X("bpx","rpan",43.1,58.2,"XC2");X("bpx","rpan",41.8,73.8,"XS2");X("bpx","rpan",59.5,56.3,"XS");X("pe","rpan",81.5,58.2,"PE");
+}
+
+function docBtn(t,u){return u?`<a href="${u}" target="_blank" rel="noopener"><button>${t}</button></a>`:`<button disabled title="Ainda não cadastrado">${t} (não cadastrado)</button>`}
+
+go(shelf);
+</script>
+</body>
+</html>
